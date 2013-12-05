@@ -83,6 +83,9 @@ public class RestApiClient {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		} else {
+			throw new RuntimeException("Status: " + clientData.getStatus()
+					+ ", Description: " + clientData.getBody());
 		}
 	}
 
@@ -114,8 +117,8 @@ public class RestApiClient {
 			return clientData.getBody();
 		}
 		// TODO - Need to check how to handle the errors
-		throw new RuntimeException("Failed : HTTP error code : "
-				+ clientData.getStatus() + "Error : " + clientData.getBody());
+		throw new RuntimeException("Status: " + clientData.getStatus()
+				+ ", Description: " + clientData.getBody());
 	}
 
 	/**
@@ -176,8 +179,8 @@ public class RestApiClient {
 					ZoneOutInfo.class);
 		}
 		// TODO - Need to check how to handle the errors
-		throw new RuntimeException("Failed : HTTP error code : "
-				+ clientData.getStatus() + "Error : " + clientData.getBody());
+		throw new RuntimeException("Status: " + clientData.getStatus()
+				+ ", Description: " + clientData.getBody());
 	}
 
 	/**
@@ -191,9 +194,8 @@ public class RestApiClient {
 		ClientData clientData = ultraRestClient.delete(url);
 		if (clientData.getStatus() != HttpStatus.SC_NO_CONTENT) {
 			// TODO - Need to check how to handle the errors
-			throw new RuntimeException("Failed : HTTP error code : "
-					+ clientData.getStatus() + "Error : "
-					+ clientData.getBody());
+			throw new RuntimeException("Status: " + clientData.getStatus()
+					+ ", Description: " + clientData.getBody());
 		}
 	}
 
@@ -235,8 +237,8 @@ public class RestApiClient {
 					.jsonToObject(clientData.getBody(), RRSetList.class);
 		}
 		// TODO - Need to check how to handle the errors
-		throw new RuntimeException("Failed : HTTP code : "
-				+ clientData.getStatus() + " Error : " + clientData.getBody());
+		throw new RuntimeException("Status: " + clientData.getStatus()
+				+ ", Description: " + clientData.getBody());
 	}
 
 	/**
@@ -281,8 +283,8 @@ public class RestApiClient {
 					.jsonToObject(clientData.getBody(), RRSetList.class);
 		}
 		// TODO - Need to check how to handle the errors
-		throw new RuntimeException("Failed : HTTP code : "
-				+ clientData.getStatus() + " Error : " + clientData.getBody());
+		throw new RuntimeException("Status: " + clientData.getStatus()
+				+ ", Description: " + clientData.getBody());
 	}
 
 	/**
@@ -327,8 +329,8 @@ public class RestApiClient {
 			return clientData.getBody();
 		}
 		// TODO - Need to check how to handle the errors
-		throw new RuntimeException("Failed : HTTP error code : "
-				+ clientData.getStatus() + " Error : " + clientData.getBody());
+		throw new RuntimeException("Status: " + clientData.getStatus()
+				+ ", Description: " + clientData.getBody());
 	}
 
 	/**
@@ -373,8 +375,8 @@ public class RestApiClient {
 			return clientData.getBody();
 		}
 		// TODO - Need to check how to handle the errors
-		throw new RuntimeException("Failed : HTTP error code : "
-				+ clientData.getStatus() + " Error : " + clientData.getBody());
+		throw new RuntimeException("Status: " + clientData.getStatus()
+				+ ", Description: " + clientData.getBody());
 	}
 
 	/**
@@ -399,9 +401,8 @@ public class RestApiClient {
 		ClientData clientData = ultraRestClient.delete(url);
 		if (clientData.getStatus() != HttpStatus.SC_NO_CONTENT) {
 			// TODO - Need to check how to handle the errors
-			throw new RuntimeException("Failed : HTTP error code : "
-					+ clientData.getStatus() + "Error : "
-					+ clientData.getBody());
+			throw new RuntimeException("Status: " + clientData.getStatus()
+					+ ", Description: " + clientData.getBody());
 		}
 	}
 
@@ -420,8 +421,8 @@ public class RestApiClient {
 					AccountList.class);
 		}
 		// TODO - Need to check how to handle the errors
-		throw new RuntimeException("Failed : HTTP error code : "
-				+ clientData.getStatus() + "Error : " + clientData.getBody());
+		throw new RuntimeException("Status: " + clientData.getStatus()
+				+ ", Description: " + clientData.getBody());
 	}
 
 	/**
