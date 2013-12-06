@@ -15,13 +15,14 @@ import biz.neustar.ultra.rest.dto.RRSet;
 import biz.neustar.ultra.rest.dto.RRSetList;
 import biz.neustar.ultra.rest.dto.TokenResponse;
 import biz.neustar.ultra.rest.dto.Zone;
-import biz.neustar.ultra.rest.dto.ZoneList;
+import biz.neustar.ultra.rest.dto.ZoneInfoList;
 import biz.neustar.ultra.rest.dto.ZoneOutInfo;
 import biz.neustar.ultra.rest.dto.ZoneProperties;
 import biz.neustar.ultra.rest.main.ClientData;
 import biz.neustar.ultra.rest.main.UltraRestClient;
 import biz.neustar.ultra.rest.util.JsonUtils;
 
+import com.google.common.base.Strings;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 /**
@@ -142,11 +143,11 @@ public class RestApiClient {
 	 * @param reverse
 	 *            - Whether the list is ascending(false) or descending(true).
 	 *            Defaults to true
-	 * @return - {@link ZoneList}
+	 * @return - {@link ZoneInfoList}
 	 * @throws IOException
 	 *             - {@link IOException}
 	 */
-	public ZoneList getZonesOfAccount(String accountName, String q,
+	public ZoneInfoList getZonesOfAccount(String accountName, String q,
 			String offset, String limit, String sort, String reverse)
 			throws IOException {
 		MultivaluedMap<String, String> queryParams = buildQueryParams(q,
@@ -154,7 +155,7 @@ public class RestApiClient {
 		String url = "v1/accounts/" + accountName + "/zones";
 		ClientData clientData = ultraRestClient.get(url, queryParams);
 		if (clientData.getStatus() == HttpStatus.SC_OK) {
-			return JsonUtils.jsonToObject(clientData.getBody(), ZoneList.class);
+			return JsonUtils.jsonToObject(clientData.getBody(), ZoneInfoList.class);
 		}
 		// TODO - Need to check how to handle the errors
 		throw new RuntimeException("Status: " + clientData.getStatus()
@@ -231,7 +232,7 @@ public class RestApiClient {
 				offset, limit, sort, reverse);
 
 		String url = "v1/zones/" + zoneName + "/rrsets";
-		ClientData clientData = ultraRestClient.post(url, queryParams);
+		ClientData clientData = ultraRestClient.get(url, queryParams);
 		if (clientData.getStatus() == HttpStatus.SC_OK) {
 			return JsonUtils
 					.jsonToObject(clientData.getBody(), RRSetList.class);
@@ -277,7 +278,7 @@ public class RestApiClient {
 				offset, limit, sort, reverse);
 
 		String url = "v1/zones/" + zoneName + "/rrsets/" + recordType;
-		ClientData clientData = ultraRestClient.post(url, queryParams);
+		ClientData clientData = ultraRestClient.get(url, queryParams);
 		if (clientData.getStatus() == HttpStatus.SC_OK) {
 			return JsonUtils
 					.jsonToObject(clientData.getBody(), RRSetList.class);
@@ -369,7 +370,7 @@ public class RestApiClient {
 
 		String url = "v1/zones/" + zoneName + "/rrsets/" + recordType + "/"
 				+ ownerName + "/default";
-		ClientData clientData = ultraRestClient.post(url,
+		ClientData clientData = ultraRestClient.put(url,
 				JsonUtils.objectToJson(rrSet));
 		if (clientData.getStatus() == HttpStatus.SC_OK) {
 			return clientData.getBody();
@@ -447,7 +448,9 @@ public class RestApiClient {
 	private MultivaluedMap<String, String> buildQueryParams(String q,
 			String offset, String limit, String sort, String reverse) {
 		MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-		queryParams.add("q", q);
+		if (!Strings.isNullOrEmpty(q)) {
+			queryParams.add("q", q);
+		}
 		queryParams.add("offset", offset);
 		queryParams.add("limit", limit);
 		queryParams.add("sort", sort);
