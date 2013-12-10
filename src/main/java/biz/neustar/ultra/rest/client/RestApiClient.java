@@ -22,6 +22,7 @@ import biz.neustar.ultra.rest.main.ClientData;
 import biz.neustar.ultra.rest.main.UltraRestClient;
 import biz.neustar.ultra.rest.util.JsonUtils;
 
+
 import com.google.common.base.Strings;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
@@ -38,23 +39,32 @@ public class RestApiClient {
 	private final String baseUrl;
 
 	// TODO - For later use
-	private String refreshToken;
+	private String refreshToken = "TprU3oAKyRGHAnXV5KjUO2F2oAZwywruoAzpNovsvE";
+    private String accessToken = "D1GxZk2zpwllgtc5u1W5j8rGYYJA";
 
-	/**
-	 * Initialize an REST API client.
-	 * 
-	 * @param userName
-	 *            - The user name
-	 * @param password
-	 *            - The user's password
-	 * @param url
-	 *            - Url of the remote server
-	 */
+
+    public static void main(String[] args) {
+        RestApiClient restApiClient = new RestApiClient("selautomation10", "Selautomation10", "http://restapi-useast1b01-01.qa.ultradns.net:8080/");
+        //System.out.println(restApiClient.getStatus());
+        //System.out.println(restApiClient.getVersion());
+        try{
+            //System.out.println(restApiClient.getZoneMetadata("domain1999.com"));
+            //System.out.println(restApiClient.getZonesOfAccount("selautomation10", "zone_type:PRIMARY", "0", "1000", "NAME", "true"));
+            //System.out.println(restApiClient.createPrimaryZone("selautomation10", "narayantest.biz"));
+            restApiClient.getZoneMetadata("narayantest.biz");
+
+            //doesnt work
+            //System.out.println(restApiClient.getRRSets("narayantest.biz", "owner:selautomation10", "0", "1000", "OWNER", "true"));
+        }
+        catch (Exception e){
+            System.out.println(e.toString());
+        }
+    }
 	public RestApiClient(String userName, String password, String url) {
 		this.baseUrl = url;
 		ultraRestClient = UltraRestClient.createRestClientBasicAuth(url,
 				userName, password);
-		authorize(userName, password);
+		//authorize(userName, password);
 	}
 
 	/**
@@ -80,8 +90,13 @@ public class RestApiClient {
 				// present in BaseCucumberMethods.
 				ultraRestClient = UltraRestClient.createRestClientOAuth(
 						baseUrl, tokenResponse.getAccessToken());
+                accessToken = tokenResponse.getAccessToken();
 				refreshToken = tokenResponse.getRefreshToken();
-			} catch (IOException e) {
+
+                System.out.println("refresh token="+refreshToken+" Access Token="+ tokenResponse.getAccessToken()+ " expires in="+tokenResponse.getExpiresIn());
+
+
+            } catch (IOException e) {
 				e.printStackTrace();
 			}
 		} else {
@@ -89,6 +104,64 @@ public class RestApiClient {
 					+ ", Description: " + clientData.getBody());
 		}
 	}
+
+    private void authorizeUsingRefreshToken(String refreshToken){
+        MultivaluedMap<String, String> form = new MultivaluedMapImpl();
+        form.add("refresh_token", refreshToken);
+        form.add("grant_type", "refresh_token");
+        ClientData clientData = ultraRestClient.post("v1/authorization/token",
+                form);
+        // Use the returned token to setup an oauth client
+        if (HttpStatus.SC_OK == clientData.getStatus()) {
+            try {
+                TokenResponse tokenResponse = JsonUtils.jsonToObject(
+                        clientData.getBody(), TokenResponse.class);
+                // TODO - Need to check if we need to call
+                // createRestClientOAuth. Currently a similar implementation is
+                // present in BaseCucumberMethods.
+                ultraRestClient = UltraRestClient.createRestClientOAuth(
+                        baseUrl, tokenResponse.getAccessToken());
+                accessToken = tokenResponse.getAccessToken();
+                refreshToken = tokenResponse.getRefreshToken();
+
+                System.out.println("refresh token="+refreshToken+" Access Token="+ tokenResponse.getAccessToken()+ " expires in="+tokenResponse.getExpiresIn());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            throw new RuntimeException("Status: " + clientData.getStatus()
+                    + ", Description: " + clientData.getBody());
+        }
+
+
+
+    }
+
+    /**
+     * Check for access token expiry
+     * if expired, use the refresh token to get a set of new access and refresh tokens
+     **/
+    public boolean checkAccessToken(ClientData clientData, String refreshToken ){
+        /**bad access token = status 400,
+        *body = {"errorCode":60001,"errorMessage":"invalid_grant:token not found, expired or invalid"}*/
+        boolean retry = false;
+        try {
+            TokenResponse tokenResponse = JsonUtils.jsonToObject(
+                    clientData.getBody(), TokenResponse.class);
+            String errorCode = clientData.getBody().split(",")[0].split(":")[1];
+            String errorMessage = clientData.getBody().split(",")[1].split(":")[1];
+            if( (clientData.getStatus() == 400) && (errorCode == "60001") && (errorMessage == "invalid_grant:token not found, expired or invalid"))
+            {
+                    authorizeUsingRefreshToken(refreshToken);
+                    retry = true;
+            }
+            else retry = false;
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return retry;
+    }
 
 	/**
 	 * Create a primary zone.
@@ -176,12 +249,21 @@ public class RestApiClient {
 		String url = "v1/zones/" + zoneName;
 		ClientData clientData = ultraRestClient.get(url);
 		if (clientData.getStatus() == HttpStatus.SC_OK) {
-			return JsonUtils.jsonToObject(clientData.getBody(),
+           //check for auth status
+           if(checkAccessToken(clientData, refreshToken))
+               clientData = ultraRestClient.get(url);
+            if(checkAccessToken(clientData, refreshToken))
+                //return error;
+                System.out.println("error");
+            else
+                return JsonUtils.jsonToObject(clientData.getBody(),
 					ZoneOutInfo.class);
+
 		}
 		// TODO - Need to check how to handle the errors
 		throw new RuntimeException("Status: " + clientData.getStatus()
-				+ ", Description: " + clientData.getBody());
+				+ ", errorCode: " + clientData.getBody() );
+
 	}
 
 	/**
@@ -229,7 +311,7 @@ public class RestApiClient {
 	public RRSetList getRRSets(String zoneName, String q, String offset,
 			String limit, String sort, String reverse) throws IOException {
 		MultivaluedMap<String, String> queryParams = buildQueryParams(q,
-				offset, limit, sort, reverse);
+                offset, limit, sort, reverse);
 
 		String url = "v1/zones/" + zoneName + "/rrsets";
 		ClientData clientData = ultraRestClient.get(url, queryParams);
