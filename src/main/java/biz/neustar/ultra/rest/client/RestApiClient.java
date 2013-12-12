@@ -1,30 +1,18 @@
 package biz.neustar.ultra.rest.client;
 
-import java.io.IOException;
-import java.util.List;
-
-import javax.ws.rs.core.MultivaluedMap;
-
-import org.apache.http.HttpStatus;
-
 import biz.neustar.ultra.rest.constants.ZoneType;
-import biz.neustar.ultra.rest.dto.AccountList;
-import biz.neustar.ultra.rest.dto.CreateType;
-import biz.neustar.ultra.rest.dto.PrimaryZoneInfo;
-import biz.neustar.ultra.rest.dto.RRSet;
-import biz.neustar.ultra.rest.dto.RRSetList;
-import biz.neustar.ultra.rest.dto.TokenResponse;
-import biz.neustar.ultra.rest.dto.Zone;
-import biz.neustar.ultra.rest.dto.ZoneInfoList;
-import biz.neustar.ultra.rest.dto.ZoneOutInfo;
-import biz.neustar.ultra.rest.dto.ZoneProperties;
+import biz.neustar.ultra.rest.dto.*;
 import biz.neustar.ultra.rest.main.ClientData;
 import biz.neustar.ultra.rest.main.UltraRestClient;
 import biz.neustar.ultra.rest.util.JsonUtils;
-
-
 import com.google.common.base.Strings;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+import org.apache.http.HttpStatus;
+
+import javax.ws.rs.core.MultivaluedMap;
+import java.io.IOException;
+import java.util.List;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * Copyright 2012-2013 NeuStar, Inc. All rights reserved. NeuStar, the Neustar
@@ -39,8 +27,10 @@ public class RestApiClient {
 	private final String baseUrl;
 
 	// TODO - For later use
-	private String refreshToken = "TprU3oAKyRGHAnXV5KjUO2F2oAZwywruoAzpNovsvE";
-    private String accessToken = "D1GxZk2zpwllgtc5u1W5j8rGYYJA";
+	private String refreshToken;
+    private String accessToken;
+    private ClientData clientData;
+
 
 
     public static void main(String[] args) {
@@ -50,8 +40,8 @@ public class RestApiClient {
         try{
             //System.out.println(restApiClient.getZoneMetadata("domain1999.com"));
             //System.out.println(restApiClient.getZonesOfAccount("selautomation10", "zone_type:PRIMARY", "0", "1000", "NAME", "true"));
-            //System.out.println(restApiClient.createPrimaryZone("selautomation10", "narayantest.biz"));
-            restApiClient.getZoneMetadata("narayantest.biz");
+            //System.out.println(restApiClient.createPrimaryZone("selautomation10", "narayantest5.biz"));
+            restApiClient.getZoneMetadata("narayantest5.biz");
 
             //doesnt work
             //System.out.println(restApiClient.getRRSets("narayantest.biz", "owner:selautomation10", "0", "1000", "OWNER", "true"));
@@ -64,7 +54,7 @@ public class RestApiClient {
 		this.baseUrl = url;
 		ultraRestClient = UltraRestClient.createRestClientBasicAuth(url,
 				userName, password);
-		//authorize(userName, password);
+		authorize(userName, password);
 	}
 
 	/**
@@ -124,7 +114,7 @@ public class RestApiClient {
                 accessToken = tokenResponse.getAccessToken();
                 refreshToken = tokenResponse.getRefreshToken();
 
-                System.out.println("refresh token="+refreshToken+" Access Token="+ tokenResponse.getAccessToken()+ " expires in="+tokenResponse.getExpiresIn());
+                System.out.println("refresh token=" + refreshToken + " Access Token=" + tokenResponse.getAccessToken() + " expires in=" + tokenResponse.getExpiresIn());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -141,26 +131,65 @@ public class RestApiClient {
      * Check for access token expiry
      * if expired, use the refresh token to get a set of new access and refresh tokens
      **/
-    public boolean checkAccessToken(ClientData clientData, String refreshToken ){
+    public boolean executeCall(String url, String method,  MultivaluedMap queryParams, String refreshToken ){
         /**bad access token = status 400,
         *body = {"errorCode":60001,"errorMessage":"invalid_grant:token not found, expired or invalid"}*/
-        boolean retry = false;
+        UltraError uError = null;
+        boolean error = false;
         try {
-            TokenResponse tokenResponse = JsonUtils.jsonToObject(
-                    clientData.getBody(), TokenResponse.class);
-            String errorCode = clientData.getBody().split(",")[0].split(":")[1];
-            String errorMessage = clientData.getBody().split(",")[1].split(":")[1];
-            if( (clientData.getStatus() == 400) && (errorCode == "60001") && (errorMessage == "invalid_grant:token not found, expired or invalid"))
-            {
+            clientData = executeMethod(url,queryParams, method);
+            if (clientData.getStatus() >= 400) {
+                uError = JsonUtils.jsonToObject(clientData.getBody(), UltraError.class);
+                if(  (uError.getErrorCode() == 60001) && (uError.getErrorMessage().equals("invalid_grant:token not found, expired or invalid")))
+                {
                     authorizeUsingRefreshToken(refreshToken);
-                    retry = true;
-            }
-            else retry = false;
+                    clientData = executeMethod(url,queryParams, method);
+                    if(clientData.getStatus() >= 400) {
+                        error = true;
+                    } else error = false;
 
-        }catch (Exception e){
-            e.printStackTrace();
+                }
+            }
+            else if (clientData.getStatus() >= 200) error = false;
+
+        }catch (IOException ioe){
+            ioe.printStackTrace();
         }
-        return retry;
+        return error;
+    }
+
+    /*executeMethod
+    * executes the method based on the parameters
+     */
+    public ClientData executeMethod (String url, MultivaluedMap queryParams, String method){            //execute the url
+        switch(method) {
+            case "post" :
+                            if (queryParams.isEmpty()) {
+                                clientData = ultraRestClient.post(url);
+                            }
+                            else {
+                                clientData = ultraRestClient.post(url, queryParams);
+                            }
+                            break;
+            case "get" :    if (queryParams.isEmpty()) {
+                                clientData = ultraRestClient.get(url);
+                            }
+                            else {
+                                clientData = ultraRestClient.get(url, queryParams);
+                            }
+                            break;
+
+            case "delete" : if (queryParams.isEmpty()) {
+                                System.out.println("inside delete");
+                                clientData = ultraRestClient.delete(url);
+                            }
+                            break;
+
+
+        }
+
+        return clientData;
+
     }
 
 	/**
@@ -247,19 +276,19 @@ public class RestApiClient {
 	 */
 	public ZoneOutInfo getZoneMetadata(String zoneName) throws IOException {
 		String url = "v1/zones/" + zoneName;
-		ClientData clientData = ultraRestClient.get(url);
-		if (clientData.getStatus() == HttpStatus.SC_OK) {
-           //check for auth status
-           if(checkAccessToken(clientData, refreshToken))
-               clientData = ultraRestClient.get(url);
-            if(checkAccessToken(clientData, refreshToken))
-                //return error;
-                System.out.println("error");
-            else
-                return JsonUtils.jsonToObject(clientData.getBody(),
-					ZoneOutInfo.class);
 
-		}
+        MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+        try {
+            if(!executeCall(url, "get", queryParams, refreshToken)){
+                 return  JsonUtils.jsonToObject(clientData.getBody(),
+                        ZoneOutInfo.class);
+            }
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+
 		// TODO - Need to check how to handle the errors
 		throw new RuntimeException("Status: " + clientData.getStatus()
 				+ ", errorCode: " + clientData.getBody() );
