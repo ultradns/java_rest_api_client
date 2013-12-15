@@ -31,6 +31,8 @@ import biz.neustar.ultra.rest.dto.ZoneOutInfo;
 public class RestApiClientTest {
 	
 	private RestApiClient restApiClient;
+    private String tokenFileName;
+    private String userPassFile;
 	
 	@Before
 	public void setup() {
@@ -48,7 +50,7 @@ public class RestApiClientTest {
 	public void testAllMethodsOnActualEnvt() throws IOException {
 		// Do not fail the test if the server is down or not-reachable
 		try {
-			restApiClient = new RestApiClient("teamrest", "Teamrest1", "http://restapi-useast1b01-01.qa.ultradns.net:8080/");
+			restApiClient = new RestApiClient( "http://restapi-useast1b01-01.qa.ultradns.net:8080/", this.userPassFile, this.tokenFileName);
 		} catch(Exception e) {
 			return;
 		}
