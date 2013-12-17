@@ -53,7 +53,7 @@ public class RestApiClientTest {
 			return;
 		}
 		String accountName = "selautomation10";
-		String zoneName = "narayantest40.biz.";
+		String zoneName = "narayantest48.biz.";
 		
 
 		// Create a primary zone
@@ -72,9 +72,8 @@ public class RestApiClientTest {
 		// List the zones for account passing the primary zone created as part of test
 		String offset = "0";
 		String limit = ""+Integer.MAX_VALUE;
-		String sort = "NAME";
 		String reverse = "true";
-		ZoneInfoList outZoneInfoList = restApiClient.getZonesOfAccount(accountName,  "zone_type:PRIMARY", offset, limit, sort, reverse);
+		ZoneInfoList outZoneInfoList = restApiClient.getZonesOfAccount(accountName,  "zone_type:PRIMARY", offset, limit, "NAME", reverse);
 
 		Assert.assertNotNull(outZoneInfoList);
 		Assert.assertNotNull(outZoneInfoList.getResultInfo());
@@ -92,21 +91,19 @@ public class RestApiClientTest {
         restApiClient.createRRSet(zoneName, "A", ownerName, ttl, rdata);
 
         // List the RRSet of type 'A' & of the primary zone created as part of test
-        //RRSetList rrSetList =  restApiClient.getRRSetsByType(zoneName, "A", "owner:selautomation10", offset, limit, sort, reverse);
-        //RRSetList rrSetList =  restApiClient.getRRSetsByType(zoneName, "1", "owner:selautomation10", offset, limit, sort, reverse);
-/*
+        RRSetList rrSetList =  restApiClient.getRRSetsByType(zoneName, "A", "owner:selautomation10", offset, limit, "TYPE", reverse);
 		Assert.assertNotNull(rrSetList);
 		Assert.assertNotNull(rrSetList.getResultInfo());
 		Assert.assertEquals(1, rrSetList.getResultInfo().getReturnedCount());
 		Assert.assertNotNull(rrSetList.getRrSets());
 		Assert.assertEquals(1, rrSetList.getRrSets().size());
 		Assert.assertEquals("A (1)", rrSetList.getRrSets().get(0).getRrtype());
-		Assert.assertEquals(ownerName, rrSetList.getRrSets().get(0).getOwnerName());
+		Assert.assertEquals(ownerName+"."+zoneName, rrSetList.getRrSets().get(0).getOwnerName());
 		Assert.assertEquals(rdata, rrSetList.getRrSets().get(0).getRdata());
 		Assert.assertEquals(ttl, rrSetList.getRrSets().get(0).getTtl());
-*/
+
 		// List the RRSets of the primary zone created as part of test
-		RRSetList rrSetList =  restApiClient.getRRSets(zoneName, "owner:selautomation10", offset, limit, "TYPE", reverse);
+		rrSetList =  restApiClient.getRRSets(zoneName, "owner:selautomation10", offset, limit, "TYPE", reverse);
 
 		// By default 2 records (NS & SOA) would be automatically created with zone creation, so they must be returned
 		Assert.assertNotNull(rrSetList);
@@ -122,33 +119,9 @@ public class RestApiClientTest {
 		restApiClient.updateRRSet(zoneName, "A", ownerName, ttl, rdata);
         // List the RRSets of the primary zone created as part of test
         rrSetList =  restApiClient.getRRSets(zoneName, "owner:selautomation10", offset, limit, "TYPE", reverse);
-
-		// List the updated RRSet of type 'A' & of the primary zone created as part of test
-		//rrSetList =  restApiClient.getRRSetsByType(zoneName, "A", null, offset, limit, sort, reverse);
-		Assert.assertNotNull(rrSetList);
-		Assert.assertNotNull(rrSetList.getResultInfo());
-		Assert.assertEquals(1, rrSetList.getResultInfo().getReturnedCount());
-		Assert.assertNotNull(rrSetList.getRrSets());
-		Assert.assertEquals(1, rrSetList.getRrSets().size());
-		Assert.assertEquals("A (1)", rrSetList.getRrSets().get(0).getRrtype());
-		//Assert.assertEquals(ownerName, rrSetList.getRrSets().get(0).getOwnerName());
-		Assert.assertEquals(rdata, rrSetList.getRrSets().get(0).getRdata());
-		Assert.assertEquals(ttl, rrSetList.getRrSets().get(0).getTtl());
-
-
 		
 		// Delete the existing RRSet of type 'A' & the primary zone created as part of test
 		restApiClient.deleteRRSet(zoneName, "A", ownerName);
-/*
-		
-		// List the updated RRSet of type 'A' & of the primary zone created as part of test
-		try {
-			rrSetList =  restApiClient.getRRSetsByType(zoneName, "A", null, offset, limit, sort, reverse);
-			Assert.fail("An exception should be thrown as record of type 'A' doesnot exist");
-		} catch(Exception e) {
-			// Expecting an exception
-		}
-*/
 		
 		// Delete the zone created
 		restApiClient.deleteZone(zoneName);
