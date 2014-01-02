@@ -1,0 +1,58 @@
+// Customize this file for your project as needed
+/////////////////////////////////////////////////
+
+// If you want to specify a version, do so here otherwise
+// one will be picked from either environment variable 'VERSION' or default to '0.0.0'
+// The version will then be appended with a build id that corresponds to the git revision commit timestamp
+allprojects {
+    version = '1.0.0'
+}
+
+// apply the common neustar gradle tasks to setup artifact repos, etc.
+apply from: file('gradle/neustar.gradle')
+
+// If this project has subprojects, you can customize them here
+//subprojects {
+//    dependencies {
+//      // common dependencies for multi-projects
+//    }
+//}
+
+// If you rename your packages, feel free to rename this..
+mainClassName = ext.serviceClassName
+
+// Add dependencies below..
+// For help with gradle, consult: http://www.gradle.org/docs/current/userguide/userguide_single.html
+
+
+ext.dropwizVer = '0.6.+'
+ext.dropwizAddonsVer = '0.0.22+'
+ext.slf4jVer = '1.7.+'
+ext.logbackVer = '1.0.+'
+ext.jacksonVer = '2.1.+'
+
+// For example: 
+///////////////
+allprojects {
+    dependencies {
+        testCompile 'junit:junit:4.+'
+        testCompile 'org.mockito:mockito-all:[1.8.5,)'
+
+        // logging
+        compile "org.slf4j:slf4j-api:$slf4jVer"
+        compile "org.slf4j:slf4j-ext:$slf4jVer"
+        compile "org.slf4j:jcl-over-slf4j:$slf4jVer"
+        compile "org.slf4j:jul-to-slf4j:$slf4jVer"
+        compile "org.slf4j:log4j-over-slf4j:$slf4jVer"
+
+        compile "ch.qos.logback:logback-core:$logbackVer"
+        compile "ch.qos.logback:logback-classic:$logbackVer"
+
+        compile 'com.google.guava:guava:14.0.1'
+        compile 'biz.neustar:ultra_rest_api-client:1.0.0+'
+        compile 'biz.neustar:ultra_rest_api-api:1.0.0+'
+        compile 'org.apache.httpcomponents:httpclient:4.3.1'
+        compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.12'
+    }
+}
+

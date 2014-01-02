@@ -7,140 +7,128 @@
  */
 package biz.neustar.ultra.rest.client;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import biz.neustar.ultra.rest.constants.ZoneType;
+import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.dto.AccountList;
 import biz.neustar.ultra.rest.dto.RRSetList;
+import biz.neustar.ultra.rest.dto.Status;
+import biz.neustar.ultra.rest.dto.Version;
 import biz.neustar.ultra.rest.dto.ZoneInfoList;
 import biz.neustar.ultra.rest.dto.ZoneOutInfo;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 public class RestApiClientTest {
-	
-	private RestApiClient restApiClient;
-    private String tokenFileName;
-    private String userPassFile;
-
-	
-	@Before
-	public void setup() {
-		restApiClient = Mockito.mock(RestApiClient.class);
-	}
-	
-
-	@Test
-	public void testGetZonesOfAccount() throws IOException {
-		restApiClient.deleteZone("zoneName");
-	}
-	
-	// TODO - Need to replace this test with the one using Mockito
-	@Test
+    @Test
 	public void testAllMethodsOnActualEnvt() throws IOException {
-		// Do not fail the test if the server is down or not-reachable
-        this.userPassFile= "/Users/npartang/Projects/java_rest_api_client/rest_user.txt";
-        this.tokenFileName = "/Users/npartang/Projects/java_rest_api_client/rest_tokens.txt";
-		try {
-			restApiClient = new RestApiClient( "http://restapi-useast1b01-01.qa.ultradns.net:8080/", this.userPassFile, this.tokenFileName);
-		} catch(Exception e) {
-			return;
-		}
-		String accountName = "selautomation10";
-		String zoneName = "narayantest48.biz.";
-		
+        /*
+        c = ultra_rest_client.RestApiClient(sys.argv[1], sys.argv[2])
+        */
+        RestApiClient restApiClient = RestApiClient.buildRestApiClientWithUidPwd("teamrest", "Teamrest1", "http://restapi-useast1b01-01.qa.ultradns.net:8080/", null);
 
-		// Create a primary zone
-		restApiClient.createPrimaryZone(accountName, zoneName);
-        System.out.println("after primary creation");
+        // Get the version of REST API server
+        /*
+        print c.version()
+         */
+        Version outVersion = restApiClient.getVersion();
+        Assert.assertNotNull(outVersion.getVersion());
+        System.out.println("outVersion = " + outVersion.getVersion());
 
-        // Get zone metadata for the primary zone created as part of test
-        ZoneOutInfo zoneOutInfo = restApiClient.getZoneMetadata(zoneName);
-        Assert.assertNotNull(zoneOutInfo);
-        Assert.assertNotNull(zoneOutInfo.getProperties());
-        Assert.assertEquals(zoneName, zoneOutInfo.getProperties().getName());
-        Assert.assertEquals(ZoneType.PRIMARY, zoneOutInfo.getProperties().getType());
+        // Get the status of REST API server
+        /*
+        print c.status()
+         */
+        Status outStatus = restApiClient.getStatus();
+        assertEquals("Good", outStatus.getMessage());
+        System.out.println("outStatus = " + outStatus.getMessage());
+
+        /*
+        account_details = c.get_account_details()
+        account_name = account_details[u'list'][0][u'accountName']
+        print account_name
+         */
+        AccountList accountList = restApiClient.getAccountDetails();
+        assertNotNull(accountList);
+        String accountName = accountList.getAccounts().get(0).getAccountName();
+        assertNotNull(accountName);
+        System.out.println("accountName = " + accountName);
+
+        /*
+        print c.create_primary_zone(account_name, "foo.invalid.")
+        print c.get_zone_metadata("foo.invalid.")
+        print c.delete_zone("foo.invalid.")
+         */
+        String result = restApiClient.createPrimaryZone(accountName, "foo.invalid.");
+        assertNotNull(result);
+        System.out.println("result = " + result);
+
+        ZoneOutInfo zone = restApiClient.getZoneMetadata("foo.invalid.");
+        assertNotNull(zone);
+        System.out.println("zone = " + zone);
+
+        restApiClient.deleteZone("foo.invalid.");
+        System.out.println("foo.invalid. deleted");
+
+        /*
+        all_zones = c.get_zones_of_account(account_name, offset=0, limit=5)
+        first_zone_name = all_zones[u'list'][0][u'properties'][u'name']
+        print first_zone_name
+        */
+        ZoneInfoList allZones = restApiClient.getZonesOfAccount(accountName, null, 0, 5, UltraRestSharedConstant.ZoneListSortType.NAME, true);
+        assertNotNull(allZones);
+        String firstZoneName = allZones.getZones().get(0).getProperties().getName();
+        System.out.println("firstZoneName = " + firstZoneName);
+
+        /*
+        print c.get_rrsets(first_zone_name)
+        print c.create_rrset(first_zone_name, "A", "foo", 300, "1.2.3.4")
+        print c.get_rrsets(first_zone_name)
+        print c.get_rrsets_by_type(first_zone_name, "A")
+        */
+        RRSetList rrsets = restApiClient.getRRSets(firstZoneName, null, 0, Integer.MAX_VALUE, UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertNotNull(rrsets);
+        System.out.println("rrsets = " + rrsets);
+        result = restApiClient.createRRSet(firstZoneName, "A", "foo", 300, Arrays.asList("1.2.3.4"));
+        assertNotNull(result);
+        System.out.println("result = " + result);
+        rrsets = restApiClient.getRRSetsByType(firstZoneName, "A", null, 0, Integer.MAX_VALUE, UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertNotNull(rrsets);
+        System.out.println("rrsets = " + rrsets);
+
+        /*
+        print c.edit_rrset(first_zone_name, "A", "foo", 100, ["10.20.30.40"])
+        print c.get_rrsets(first_zone_name)
+        print c.get_rrsets_by_type(first_zone_name, "A")
+        */
+        result = restApiClient.updateRRSet(firstZoneName, "A", "foo", 100, Arrays.asList("10.20.30.40"));
+        assertNotNull(result);
+        System.out.println("result = " + result);
+        rrsets = restApiClient.getRRSets(firstZoneName, null, 0, Integer.MAX_VALUE, UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertNotNull(rrsets);
+        System.out.println("rrsets = " + rrsets);
+        rrsets = restApiClient.getRRSetsByType(firstZoneName, "A", null, 0, Integer.MAX_VALUE, UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertNotNull(rrsets);
+        System.out.println("rrsets = " + rrsets);
 
 
-
-		// List the zones for account passing the primary zone created as part of test
-		String offset = "0";
-		String limit = ""+Integer.MAX_VALUE;
-		String reverse = "true";
-		ZoneInfoList outZoneInfoList = restApiClient.getZonesOfAccount(accountName,  "zone_type:PRIMARY", offset, limit, "NAME", reverse);
-
-		Assert.assertNotNull(outZoneInfoList);
-		Assert.assertNotNull(outZoneInfoList.getResultInfo());
-		//Assert.assertEquals(8, outZoneInfoList.getResultInfo().getReturnedCount());
-		Assert.assertNotNull(outZoneInfoList.getList());
-		Assert.assertNotNull(outZoneInfoList.getList().get(0));
-		Assert.assertNotNull(outZoneInfoList.getList().get(0).getProperties());
-		//Assert.assertEquals(zoneName, outZoneInfoList.getList().get(0).getProperties().getName());
-		Assert.assertEquals(ZoneType.PRIMARY, outZoneInfoList.getList().get(0).getProperties().getType());
-
-        // Create a new RRSet of type 'A' & the primary zone created as part of test
-        List<String> rdata = Arrays.asList("12.12.12.13");
-        String ownerName = "selautomation10";
-        Integer ttl = new Integer(300);
-        restApiClient.createRRSet(zoneName, "A", ownerName, ttl, rdata);
-
-        // List the RRSet of type 'A' & of the primary zone created as part of test
-        RRSetList rrSetList =  restApiClient.getRRSetsByType(zoneName, "A", "owner:selautomation10", offset, limit, "TYPE", reverse);
-		Assert.assertNotNull(rrSetList);
-		Assert.assertNotNull(rrSetList.getResultInfo());
-		Assert.assertEquals(1, rrSetList.getResultInfo().getReturnedCount());
-		Assert.assertNotNull(rrSetList.getRrSets());
-		Assert.assertEquals(1, rrSetList.getRrSets().size());
-		Assert.assertEquals("A (1)", rrSetList.getRrSets().get(0).getRrtype());
-		Assert.assertEquals(ownerName+"."+zoneName, rrSetList.getRrSets().get(0).getOwnerName());
-		Assert.assertEquals(rdata, rrSetList.getRrSets().get(0).getRdata());
-		Assert.assertEquals(ttl, rrSetList.getRrSets().get(0).getTtl());
-
-		// List the RRSets of the primary zone created as part of test
-		rrSetList =  restApiClient.getRRSets(zoneName, "owner:selautomation10", offset, limit, "TYPE", reverse);
-
-		// By default 2 records (NS & SOA) would be automatically created with zone creation, so they must be returned
-		Assert.assertNotNull(rrSetList);
-		Assert.assertNotNull(rrSetList.getResultInfo());
-		//Assert.assertEquals(2, rrSetList.getResultInfo().getReturnedCount());
-		Assert.assertNotNull(rrSetList.getRrSets());
-		//Assert.assertEquals(2, rrSetList.getRrSets().size());
-		//Assert.assertEquals("NS (2)", rrSetList.getRrSets().get(0).getRrtype());
-		//Assert.assertEquals("SOA (6)", rrSetList.getRrSets().get(1).getRrtype());
-
-		// Update the existing RRSet of type 'A' & the primary zone created as part of test
-		ttl = 500;
-		restApiClient.updateRRSet(zoneName, "A", ownerName, ttl, rdata);
-        // List the RRSets of the primary zone created as part of test
-        rrSetList =  restApiClient.getRRSets(zoneName, "owner:selautomation10", offset, limit, "TYPE", reverse);
-		
-		// Delete the existing RRSet of type 'A' & the primary zone created as part of test
-		restApiClient.deleteRRSet(zoneName, "A", ownerName);
-		
-		// Delete the zone created
-		restApiClient.deleteZone(zoneName);
-		
-		// Get the account details for user
-		AccountList accountList = restApiClient.getAccountDetails();
-
-		Assert.assertNotNull(accountList);
-		Assert.assertNotNull(accountList.getList());
-		Assert.assertTrue(accountList.getList().size() > 0);
-		Assert.assertTrue(accountList.getList().get(0).getNumberOfUsers() > 0);
-
-		// Get the version of REST API server
-		String outVersion = restApiClient.getVersion();
-		Assert.assertNotNull(outVersion);
-		
-		// Get the status of REST API server
-		String outStatus = restApiClient.getStatus();
-		Assert.assertNotNull(outStatus);
-
+        /*
+        print c.delete_rrset(first_zone_name, "A", "foo")
+        print c.get_rrsets(first_zone_name)
+        print c.get_rrsets_by_type(first_zone_name, "A")
+         */
+        restApiClient.deleteRRSet(firstZoneName, "A", "foo");
+        System.out.println("foo."+firstZoneName+" deleted");
+        rrsets = restApiClient.getRRSets(firstZoneName, null, 0, Integer.MAX_VALUE, UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertNotNull(rrsets);
+        System.out.println("rrsets = " + rrsets);
+        rrsets = restApiClient.getRRSetsByType(firstZoneName, "A", null, 0, Integer.MAX_VALUE, UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertNotNull(rrsets);
+        System.out.println("rrsets = " + rrsets);
 	}
 }
