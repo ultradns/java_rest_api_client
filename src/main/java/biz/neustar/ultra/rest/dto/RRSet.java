@@ -39,30 +39,21 @@ public class RRSet {
      *            - Zone Name
      * @param ownerName
      *            - Owner Name
-     * @param title
-     *            - Title
-     * @param version
-     *            - Version
      * @param rrtype
      *            - RR type
      * @param ttl
      *            - TTL
      * @param rdata
      *            - RR Data
-     * @param rrsigs
-     *            - {@link RRSigs}
      */
-    public RRSet(String zoneName, String ownerName, String title, long version, String rrtype, Integer ttl,
-                 List<String> rdata, List<RRSigs> rrsigs) {
+    public RRSet(String zoneName, String ownerName, String rrtype, Integer ttl,
+                 List<String> rdata) {
         super();
         this.zoneName = zoneName;
         this.ownerName = ownerName;
-        this.title = title;
-        this.version = version;
         this.rrtype = rrtype;
         this.ttl = ttl;
         this.rdata = rdata;
-        this.rrsigs = rrsigs;
     }
 
     /**

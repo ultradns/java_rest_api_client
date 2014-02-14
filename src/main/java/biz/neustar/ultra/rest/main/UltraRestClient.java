@@ -74,7 +74,7 @@ public final class UltraRestClient {
     private ClientResponse method(String method, WebResource.Builder builder, boolean tryRefresh) {
         ClientResponse clientResponse = addAuth.addAuth(builder).method(method, ClientResponse.class);
         if (tryRefresh && (clientResponse.getClientResponseStatus().getStatusCode() == HttpStatus.SC_BAD_REQUEST ||
-                clientResponse.getClientResponseStatus().getStatusCode()  == HttpStatus.SC_UNAUTHORIZED)) {
+                clientResponse.getClientResponseStatus().getStatusCode() == HttpStatus.SC_UNAUTHORIZED)) {
             Map<String, Object> errorResponse = getErrorResponse(clientResponse);
 
             Object error = errorResponse.get("error");
@@ -296,7 +296,7 @@ public final class UltraRestClient {
             subUrl = url.substring(1);
         }
         if (!baseUrl.endsWith("/") && !url.startsWith("/")) {
-            subUrl = "/"+url;
+            subUrl = "/" + url;
         }
         if (!subUrl.toLowerCase(Locale.US).startsWith(baseUrl.toLowerCase(Locale.US))) {
             return baseUrl + subUrl;

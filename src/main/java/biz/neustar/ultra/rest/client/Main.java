@@ -20,63 +20,63 @@ import java.util.Properties;
  * product names, company names, marks, logos and symbols may be trademarks
  * of their respective owners.
  */
-public class Main {
-    private final static Logger LOG = LoggerFactory.getLogger(Main.class);
+public final class Main {
+    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
-    // TODO - For later use
+    // For later use
     private static String refreshToken;
     private static String accessToken;
 
-    private static String user;
-    private static String password;
     private static String baseUrl;
 
     private static void readUserPassword(String fileName) {
-        try {
+        try (FileInputStream fis = new FileInputStream(fileName)) {
             Properties props = new Properties();
-            props.load(new FileInputStream(fileName));
-            user = props.getProperty("user");
-            password = props.getProperty("password");
+            props.load(fis);
             baseUrl = props.getProperty("baseUrl");
         } catch (IOException e) {
-            System.out.printf("unable to load from file %s\n", fileName);
+            System.out.printf("unable to load from file %s", fileName);
+            System.out.println();
             e.printStackTrace();
         }
     }
 
     private static void writeUserPassword(String fileName, String user, String password, String url) {
-        try {
+        try (FileOutputStream fos = new FileOutputStream(fileName)) {
             Properties props = new Properties();
             props.setProperty("user", user);
             props.setProperty("password", password);
             props.setProperty("baseUrl", url);
-            props.store(new FileOutputStream(fileName), "");
+            props.store(fos, "");
         } catch (IOException e) {
-            System.out.printf("unable to load from file %s\n", fileName);
+            System.out.printf("unable to load from file %s", fileName);
+            System.out.println();
             e.printStackTrace();
         }
     }
 
     private static void readTokens(String fileName) {
-        try {
+        try (FileInputStream fis = new FileInputStream(fileName)) {
             Properties props = new Properties();
-            props.load(new FileInputStream(fileName));
+            props.load(fis);
             accessToken = props.getProperty("accessToken");
             refreshToken = props.getProperty("refreshToken");
         } catch (IOException e) {
-            System.out.printf("unable to load from file %s\n", fileName);
+            System.out.printf("unable to load from file %s", fileName);
+            System.out.println();
             e.printStackTrace();
         }
     }
 
     private static void writeTokens(String fileName, String accessToken, String refreshToken) {
-        try {
+        try (FileOutputStream fos = new FileOutputStream(fileName)) {
             Properties props = new Properties();
             props.setProperty("accessToken", accessToken);
             props.setProperty("refreshToken", refreshToken);
-            props.store(new FileOutputStream(fileName), "");
+            props.store(fos, "");
         } catch (IOException e) {
-            System.out.printf("unable to write to file %s\n", fileName);
+            System.out.printf("unable to write to file %s", fileName);
+            System.out.println();
             e.printStackTrace();
         }
     }
@@ -87,31 +87,16 @@ public class Main {
 
     public static void main(String[] args) {
         RestApiClient restApiClient = null;
-        if(args.length == 0) {
+        if (args.length == 0) {
             //try to load from property files
-            readTokens("rest_tokens.txt");
-            readUserPassword("rest_user.txt");
-            if (accessToken != null && refreshToken != null && baseUrl != null) {
-                restApiClient = RestApiClient.buildRestApiClientWithTokens(accessToken, refreshToken, baseUrl, new OAuth.Callback() {
-                    @Override
-                    public void tokensUpdated(String newAccessToken, String newRefreshToken) {
-                        writeTokens("rest_tokens.txt", newAccessToken, newRefreshToken);
-                    }
-                });
-            }
+            restApiClient = getRestApiClient();
         }
 
         if (args.length == 3) {
-            writeUserPassword("rest_user.txt", args[0], args[1], args[2]);
-            restApiClient = RestApiClient.buildRestApiClientWithUidPwd(args[0], args[1], args[2], new OAuth.Callback() {
-                @Override
-                public void tokensUpdated(String newAccessToken, String newRefreshToken) {
-                    writeTokens("rest_tokens.txt", newAccessToken, newRefreshToken);
-                }
-            });
+            restApiClient = getRestApiClient(args);
         }
 
-        if(restApiClient == null) {
+        if (restApiClient == null) {
             System.err.println("Expected parameters: username password server_base_url");
             System.err.println("Example: my_user my_password https://restapi.ultradns.com");
             System.exit(1);
@@ -121,7 +106,36 @@ public class Main {
         try {
             System.out.println(restApiClient.createPrimaryZone("account_name", "zone.name.invalid"));
         } catch (Exception e) {
-            LOG.error("Exception while running REST API Client",e);
+            LOG.error("Exception while running REST API Client", e);
         }
+    }
+
+    private static RestApiClient getRestApiClient(String[] args) {
+        RestApiClient restApiClient;
+        writeUserPassword("rest_user.txt", args[0], args[1], args[2]);
+        restApiClient = RestApiClient.buildRestApiClientWithUidPwd(args[0], args[1], args[2],
+                new OAuth.Callback() {
+                    @Override
+                    public void tokensUpdated(String newAccessToken, String newRefreshToken) {
+                        writeTokens("rest_tokens.txt", newAccessToken, newRefreshToken);
+                    }
+                });
+        return restApiClient;
+    }
+
+    private static RestApiClient getRestApiClient() {
+        RestApiClient restApiClient = null;
+        readTokens("rest_tokens.txt");
+        readUserPassword("rest_user.txt");
+        if (accessToken != null && refreshToken != null && baseUrl != null) {
+            restApiClient = RestApiClient.buildRestApiClientWithTokens(accessToken, refreshToken, baseUrl,
+                    new OAuth.Callback() {
+                        @Override
+                        public void tokensUpdated(String newAccessToken, String newRefreshToken) {
+                            writeTokens("rest_tokens.txt", newAccessToken, newRefreshToken);
+                        }
+                    });
+        }
+        return restApiClient;
     }
 }

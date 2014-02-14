@@ -8,6 +8,12 @@ Dependencies
 
 Gradle is used to build the code.  The Gradle Wrapper is included with the build for users who do not already have gradle installed.  All other dependent libraries will be downloaded when the project is built.
 
+If you want to build and test the code:
+
+./gradlew clean check test -Drest.username=USERNAME -Drest.password=PASSWORD -Drest.url=https://restapi.ultradns.com
+
+Replace USERNAME and PASSWORD with your own username and password.
+
 Functionality
 =============
 
