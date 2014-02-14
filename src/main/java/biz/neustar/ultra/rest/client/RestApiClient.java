@@ -1,9 +1,11 @@
 package biz.neustar.ultra.rest.client;
 
-import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
+import biz.neustar.ultra.rest.client.util.JsonUtils;
+import biz.neustar.ultra.rest.constants.CreateType;
+import biz.neustar.ultra.rest.constants.RRListSortType;
+import biz.neustar.ultra.rest.constants.ZoneListSortType;
 import biz.neustar.ultra.rest.constants.ZoneType;
 import biz.neustar.ultra.rest.dto.AccountList;
-import biz.neustar.ultra.rest.dto.CreateType;
 import biz.neustar.ultra.rest.dto.PrimaryZoneInfo;
 import biz.neustar.ultra.rest.dto.RRSet;
 import biz.neustar.ultra.rest.dto.RRSetList;
@@ -17,7 +19,6 @@ import biz.neustar.ultra.rest.main.ClientData;
 import biz.neustar.ultra.rest.main.UltraRestClient;
 import biz.neustar.ultra.rest.main.UltraRestClientFactory;
 import biz.neustar.ultra.rest.main.auth.OAuth;
-import biz.neustar.ultra.rest.util.JsonUtils;
 import com.google.common.base.Strings;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.slf4j.Logger;
@@ -125,7 +126,7 @@ public class RestApiClient {
 	 *             - {@link IOException}
 	 */
 	public ZoneInfoList getZonesOfAccount(String accountName, String q,
-			int offset, int limit, UltraRestSharedConstant.ZoneListSortType sort, boolean reverse)
+			int offset, int limit, ZoneListSortType sort, boolean reverse)
 			throws IOException {
 		MultivaluedMap<String, String> queryParams = buildQueryParams(q,
 				offset, limit, sort, reverse);
@@ -192,7 +193,7 @@ public class RestApiClient {
 	 *             - {@link IOException}
 	 */
 	public RRSetList getRRSets(String zoneName, String q, int offset,
-			int limit, UltraRestSharedConstant.RRListSortType sort, boolean reverse) throws IOException {
+			int limit, RRListSortType sort, boolean reverse) throws IOException {
 		MultivaluedMap<String, String> queryParams = buildQueryParams(q,
                 offset, limit, sort, reverse);
 
@@ -233,7 +234,7 @@ public class RestApiClient {
 	 *             - {@link IOException}
 	 */
 	public RRSetList getRRSetsByType(String zoneName, String recordType,
-			String q, int offset, int limit, UltraRestSharedConstant.RRListSortType sort, boolean reverse)
+			String q, int offset, int limit, RRListSortType sort, boolean reverse)
 			throws IOException {
 		MultivaluedMap<String, String> queryParams = buildQueryParams(q,
 				offset, limit, sort, reverse);

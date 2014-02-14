@@ -49,10 +49,20 @@ allprojects {
         compile "ch.qos.logback:logback-classic:$logbackVer"
 
         compile 'com.google.guava:guava:14.0.1'
-        compile 'biz.neustar:ultra_rest_api-client:1.0.0+'
-        compile 'biz.neustar:ultra_rest_api-api:1.0.0+'
         compile 'org.apache.httpcomponents:httpclient:4.3.1'
-        compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.12'
+        compile 'com.fasterxml.jackson.core:jackson-core:2.3.1'
+        compile 'com.fasterxml.jackson.core:jackson-annotations:2.3.1'
+        compile 'com.fasterxml.jackson.core:jackson-databind:2.3.1'
+
+
+        compile 'com.sun.jersey:jersey-client:1.17.1'
+        compile 'javax.ws.rs:jsr311-api:1.1.1'
+        compile 'com.sun.jersey:jersey-core:1.17.1'
+        compile "com.sun.jersey.contribs:jersey-multipart:1.17.1"
+        compile "com.sun.jersey.contribs:jersey-apache-client:1.17.1"
+
+        compile "org.skyscreamer:jsonassert:1.2.1"
+        compile "javax.validation:validation-api:1.1.0.Final"
     }
 }
 

@@ -113,22 +113,13 @@ public class Main {
 
         if(restApiClient == null) {
             System.err.println("Expected parameters: username password server_base_url");
-            System.err.println("Example: my_user my_password http://restapi-useast1b01-01.qa.ultradns.net:8080/");
+            System.err.println("Example: my_user my_password https://restapi.ultradns.com");
             System.exit(1);
         }
 
-        //System.out.println(restApiClient.getStatus());
-        //System.out.println(restApiClient.getVersion());
+        //do your REST API work here...for example
         try {
-            //System.out.println(restApiClient.getZoneMetadata("domain1999.com"));
-            //System.out.println(restApiClient.getZonesOfAccount("selautomation10", "zone_type:PRIMARY", "0", "1000", "NAME", "true"));
-            System.out.println(restApiClient.createPrimaryZone("selautomation10", "narayantest8.biz"));
-            //for (int i=0; i<200; i++)
-            //    restApiClient.getZoneMetadata("narayantest7.biz");
-
-            //doesnt work
-            //System.out.println(restApiClient.getRRSets("narayantest.biz", "owner:selautomation10", "0", "1000", "OWNER", "true"));
-            //estApiClient.deleteZone("narayantest6.biz");
+            System.out.println(restApiClient.createPrimaryZone("account_name", "zone.name.invalid"));
         } catch (Exception e) {
             LOG.error("Exception while running REST API Client",e);
         }
