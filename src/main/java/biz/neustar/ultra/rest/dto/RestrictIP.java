@@ -1,23 +1,46 @@
 /**
- * Copyright 2000-2013 NeuStar, Inc. All rights reserved.
- * NeuStar, the Neustar logo and related names and logos are registered
- * trademarks, service marks or tradenames of NeuStar, Inc. All other
- * product names, company names, marks, logos and symbols may be trademarks
- * of their respective owners.
+ * Copyright 2000-2013 NeuStar, Inc. All rights reserved. NeuStar, the Neustar logo and related names and logos are
+ * registered trademarks, service marks or tradenames of NeuStar, Inc. All other product names, company names, marks,
+ * logos and symbols may be trademarks of their respective owners.
  */
 package biz.neustar.ultra.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.google.common.base.Objects;
 
 /**
  * Restrict IP.
- * @author kushalraj.bhandari
  *
+ * @author kushalraj.bhandari
  */
 @JsonInclude(Include.NON_NULL)
+@SuppressWarnings("PMD.CyclomaticComplexity") //complaining about equals and hashCode
 public class RestrictIP {
+
+    /**
+     * To generate hash code.
+     */
+    private static final int PRIME_NUMBER = 31;
+    /**
+     * Start IP.
+     */
+    private String startIP;
+    /**
+     * End IP.
+     */
+    private String endIP;
+    /**
+     * The CIDR.
+     */
+    private String cidr;
+    /**
+     * The single IP for restriction.
+     */
+    private String singleIP;
+    /**
+     * Comment.
+     */
+    private String comment;
 
     /**
      * Empty Constructor.
@@ -28,55 +51,23 @@ public class RestrictIP {
 
     /**
      * Parameterized constructor.
-     * 
-     * @param startIP
-     *            - Start IP
-     * @param endIP
-     *            - End IP
-     * @param tsigKey
-     *            - Tsig key
-     * @param tsigKeyValue
-     *            - Tsig key value
-     * @param comment
-     *            - comment
+     *
+     * @param startIP - Start IP
+     * @param endIP   - End IP
+     * @param comment - comment
      */
-    public RestrictIP(String startIP, String endIP, String tsigKey,
-                      String tsigKeyValue, String comment) {
+    public RestrictIP(String startIP, String endIP, String cidr, String singleIP, String comment) {
         super();
         this.startIP = startIP;
         this.endIP = endIP;
-        this.tsigKey = tsigKey;
-        this.tsigKeyValue = tsigKeyValue;
+        this.cidr = cidr;
+        this.singleIP = singleIP;
         this.comment = comment;
     }
 
     /**
-     * Start IP.
-     */
-    private String startIP;
-
-    /**
-     * End IP.
-     */
-    private String endIP;
-
-    /**
-     * Tsig key.
-     */
-    private String tsigKey;
-
-    /**
-     * Tsig key value.
-     */
-    private String tsigKeyValue;
-
-    /**
-     * Comment.
-     */
-    private String comment;
-
-    /**
      * Get the startIP.
+     *
      * @return the startIP
      */
     public final String getStartIP() {
@@ -85,8 +76,8 @@ public class RestrictIP {
 
     /**
      * Set the startIP.
-     * @param startIP
-     *            the startIP to set
+     *
+     * @param startIP the startIP to set
      */
     public final void setStartIP(String startIP) {
         this.startIP = startIP;
@@ -94,6 +85,7 @@ public class RestrictIP {
 
     /**
      * Get the endIP.
+     *
      * @return the endIP
      */
     public final String getEndIP() {
@@ -102,49 +94,32 @@ public class RestrictIP {
 
     /**
      * Set the endIP.
-     * @param endIP
-     *            the endIP to set
+     *
+     * @param endIP the endIP to set
      */
     public final void setEndIP(String endIP) {
         this.endIP = endIP;
     }
 
-    /**
-     * Get the tsigKey.
-     * @return the tsigKey
-     */
-    public final String getTsigKey() {
-        return tsigKey;
+    public String getCidr() {
+        return cidr;
     }
 
-    /**
-     * Set the tsigKey.
-     * @param tsigKey
-     *            the tsigKey to set
-     */
-    public final void setTsigKey(String tsigKey) {
-        this.tsigKey = tsigKey;
+    public void setCidr(String cidr) {
+        this.cidr = cidr;
     }
 
-    /**
-     * Get the tsigKeyValue.
-     * @return the tsigKeyValue
-     */
-    public final String getTsigKeyValue() {
-        return tsigKeyValue;
+    public String getSingleIP() {
+        return singleIP;
     }
 
-    /**
-     * Set the tsigKeyValue.
-     * @param tsigKeyValue
-     *            the tsigKeyValue to set
-     */
-    public final void setTsigKeyValue(String tsigKeyValue) {
-        this.tsigKeyValue = tsigKeyValue;
+    public void setSingleIP(String singleIP) {
+        this.singleIP = singleIP;
     }
 
     /**
      * Get the comment.
+     *
      * @return the comment
      */
     public final String getComment() {
@@ -153,56 +128,58 @@ public class RestrictIP {
 
     /**
      * Set the comment.
-     * @param comment
-     *            the comment to set
+     *
+     * @param comment the comment to set
      */
     public final void setComment(String comment) {
         this.comment = comment;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
     @Override
-    public final String toString() {
-
-        return Objects.toStringHelper(this).add("startIP", getStartIP())
-                .add("endIP", getEndIP())
-                .add("tsigKey", getTsigKey())
-                .add("tsigKeyValue", getTsigKeyValue())
-                .add("comment", getComment()).toString();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public final int hashCode() {
-        return Objects.hashCode(getStartIP(), getEndIP(), getTsigKey(),
-                getTsigKeyValue(), getComment());
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public final boolean equals(final Object obj) {
-        boolean isEqual = true;
-        if (!(obj instanceof RestrictIP)) {
+    @SuppressWarnings("PMD") // this is auto-generated code -- don't warn on how complicated it is
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final RestrictIP other = (RestrictIP) obj;
-        isEqual = Objects.equal(getStartIP(), other.getStartIP())
-                && Objects.equal(getEndIP(), other.getEndIP())
-                && Objects.equal(getTsigKey(), other.getTsigKey())
-                && Objects.equal(getTsigKeyValue(), other.getTsigKeyValue())
-                && Objects.equal(getComment(), other.getComment());
-        return isEqual;
+
+        RestrictIP that = (RestrictIP) o;
+
+        if (cidr != null ? !cidr.equals(that.cidr) : that.cidr != null) {
+            return false;
+        }
+        if (comment != null ? !comment.equals(that.comment) : that.comment != null) {
+            return false;
+        }
+        if (endIP != null ? !endIP.equals(that.endIP) : that.endIP != null) {
+            return false;
+        }
+        if (singleIP != null ? !singleIP.equals(that.singleIP) : that.singleIP != null) {
+            return false;
+        }
+        if (startIP != null ? !startIP.equals(that.startIP) : that.startIP != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    @SuppressWarnings("PMD") // this is auto-generated code -- don't warn on how complicated it is
+    public int hashCode() {
+        int result = startIP != null ? startIP.hashCode() : 0;
+        result = PRIME_NUMBER * result + (endIP != null ? endIP.hashCode() : 0);
+        result = PRIME_NUMBER * result + (cidr != null ? cidr.hashCode() : 0);
+        result = PRIME_NUMBER * result + (singleIP != null ? singleIP.hashCode() : 0);
+        result = PRIME_NUMBER * result + (comment != null ? comment.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "RestrictIP{" + "startIP='" + startIP + '\'' + ", endIP='" + endIP + '\'' + ", cidr='" + cidr + '\''
+                + ", singleIP='" + singleIP + '\'' + ", comment='" + comment + '\'' + '}';
     }
 }

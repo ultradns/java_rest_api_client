@@ -12,15 +12,13 @@ package biz.neustar.ultra.rest.constants;
  * of their respective owners.
  */
 public enum ZoneType {
-    PRIMARY((short) 1), SECONDARY((short) 2), ALIAS((short) 3);
+    PRIMARY((short) 1),
+    SECONDARY((short) 2),
+    ALIAS((short) 3);
     private final short value;
 
-    private ZoneType(final short newValue) {
+    ZoneType(final short newValue) {
         value = newValue;
-    }
-
-    public short getValue() {
-        return value;
     }
 
     public static ZoneType getValue(short zoneValue) {
@@ -30,5 +28,9 @@ public enum ZoneType {
             }
         }
         return null;
+    }
+
+    public short getValue() {
+        return value;
     }
 }

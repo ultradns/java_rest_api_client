@@ -1,47 +1,24 @@
 /**
- * Copyright 2000-2013 NeuStar, Inc. All rights reserved.
- * NeuStar, the Neustar logo and related names and logos are registered
- * trademarks, service marks or tradenames of NeuStar, Inc. All other
- * product names, company names, marks, logos and symbols may be trademarks
- * of their respective owners.
+ * Copyright 2000-2013 NeuStar, Inc. All rights reserved. NeuStar, the Neustar logo and related names and logos are
+ * registered trademarks, service marks or tradenames of NeuStar, Inc. All other product names, company names, marks,
+ * logos and symbols may be trademarks of their respective owners.
  */
 package biz.neustar.ultra.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+
+import java.io.Serializable;
 
 /**
  * Result Info.
+ *
  * @author nupadhyay
- * 
  */
 @JsonInclude(Include.NON_NULL)
-public class ResultInfo {
-
-    /**
-     * Empty constructor.
-     */
-    public ResultInfo() {
-        super();
-    }
-
-    /**
-     * Parameterized constructor.
-     * 
-     * @param totalCount
-     *            - Total count.
-     * @param offset
-     *            - Offset
-     * @param returnedCount
-     *            - Returned count.
-     */
-    public ResultInfo(int totalCount, int offset, int returnedCount) {
-        super();
-        this.totalCount = totalCount;
-        this.offset = offset;
-        this.returnedCount = returnedCount;
-    }
+public class ResultInfo implements Serializable {
 
     /**
      * Count of records in the system for the specified query.
@@ -56,9 +33,33 @@ public class ResultInfo {
      */
     private int returnedCount;
 
+    /** The rrdata count. */
+    private Integer rrdataCount;
+
+    /**
+     * Empty constructor.
+     */
+    public ResultInfo() {
+        super();
+    }
+
+    /**
+     * Parameterized constructor.
+     *
+     * @param totalCount    - Total count.
+     * @param offset        - Offset
+     * @param returnedCount - Returned count.
+     */
+    public ResultInfo(int totalCount, int offset, int returnedCount) {
+        super();
+        this.totalCount = totalCount;
+        this.offset = offset;
+        this.returnedCount = returnedCount;
+    }
+
     /**
      * Get total count.
-     * 
+     *
      * @return the totalCount
      */
     public final int getTotalCount() {
@@ -67,9 +68,8 @@ public class ResultInfo {
 
     /**
      * Set total count.
-     * 
-     * @param totalCount
-     *            the totalCount to set
+     *
+     * @param totalCount the totalCount to set
      */
     public final void setTotalCount(int totalCount) {
         this.totalCount = totalCount;
@@ -77,7 +77,7 @@ public class ResultInfo {
 
     /**
      * Get offset.
-     * 
+     *
      * @return the offset
      */
     public final int getOffset() {
@@ -86,9 +86,8 @@ public class ResultInfo {
 
     /**
      * Set offset.
-     * 
-     * @param offset
-     *            the offset to set
+     *
+     * @param offset the offset to set
      */
     public final void setOffset(int offset) {
         this.offset = offset;
@@ -96,7 +95,7 @@ public class ResultInfo {
 
     /**
      * Get Returned count.
-     * 
+     *
      * @return the returnedCount
      */
     public final int getReturnedCount() {
@@ -105,40 +104,60 @@ public class ResultInfo {
 
     /**
      * Set returned count.
-     * 
-     * @param returnedCount
-     *            the returnedCount to set
+     *
+     * @param returnedCount the returnedCount to set
      */
     public final void setReturnedCount(int returnedCount) {
         this.returnedCount = returnedCount;
     }
 
+    /**
+     * Gets the rrdata count.
+     *
+     * @return the rrdata count
+     */
+    public Integer getRrdataCount() {
+        return rrdataCount;
+    }
+
+    /**
+     * Sets the rrdata count.
+     *
+     * @param rrdataCount
+     *            the new rrdata count
+     */
+    public void setRrdataCount(Integer rrdataCount) {
+        this.rrdataCount = rrdataCount;
+    }
+
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     @Override
     public final String toString() {
-        return Objects.toStringHelper(this).add("totalCount", getTotalCount())
+        return MoreObjects.toStringHelper(this)
+                .add("totalCount", getTotalCount())
                 .add("offset", getOffset())
-                .add("returnedCount", getReturnedCount()).toString();
+                .add("returnedCount", getReturnedCount())
+                .add("rrdataCount", getRrdataCount())
+                .toString();
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
     public final int hashCode() {
-        return Objects.hashCode(getTotalCount(), getOffset(),
-                getReturnedCount());
+        return Objects.hashCode(getTotalCount(), getOffset(), getReturnedCount(), getRrdataCount());
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -148,9 +167,9 @@ public class ResultInfo {
             return false;
         }
         final ResultInfo other = (ResultInfo) obj;
-        isEqual = Objects.equal(getTotalCount(), other.getTotalCount())
-                && Objects.equal(getOffset(), other.getOffset())
-                && Objects.equal(getReturnedCount(), other.getReturnedCount());
+        isEqual = Objects.equal(getTotalCount(), other.getTotalCount()) && Objects.equal(getOffset(), other.getOffset())
+                && Objects.equal(getReturnedCount(), other.getReturnedCount())
+                && Objects.equal(getRrdataCount(), other.getRrdataCount());
         return isEqual;
     }
 

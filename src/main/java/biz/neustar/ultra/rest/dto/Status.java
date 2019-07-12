@@ -1,5 +1,7 @@
 package biz.neustar.ultra.rest.dto;
 
+import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
+
 /*
  * User: jbodner
  * Date: 6/13/13
@@ -12,11 +14,14 @@ package biz.neustar.ultra.rest.dto;
  * of their respective owners.
  */
 public class Status {
+    public static final Status SUCCESSFUL = new Status(UltraRestSharedConstant.SUCCESSFUL.getValue());
+    public static final Status PENDING = new Status(UltraRestSharedConstant.PENDING.getValue());
+
     private String message;
 
     /**
-     * Default constructor.  The preferred constructor is the one with a parameter, but some deserialization
-     * situations may require an empty constructor.  The message field should always be populated.
+     * Default constructor.  The preferred constructor is the one with a parameter, but some deserialization situations
+     * may require an empty constructor.  The message field should always be populated.
      */
     public Status() {
         //intentionally empty
@@ -26,18 +31,35 @@ public class Status {
         this.message = message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public String getMessage() {
         return message;
     }
 
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Status status = (Status) o;
+
+        return !(message != null ? !message.equals(status.message) : status.message != null);
+    }
+
+    @Override
+    public int hashCode() {
+        return message != null ? message.hashCode() : 0;
+    }
+
     @Override
     public String toString() {
-        return "Status{" +
-                "message='" + message + '\'' +
-                '}';
+        return "Status{" + "message='" + message + '\'' + '}';
     }
 }

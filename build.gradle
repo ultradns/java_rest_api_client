@@ -48,11 +48,11 @@ allprojects {
         compile "ch.qos.logback:logback-core:$logbackVer"
         compile "ch.qos.logback:logback-classic:$logbackVer"
 
-        compile 'com.google.guava:guava:14.0.1'
+        compile 'com.google.guava:guava:18.0'
         compile 'org.apache.httpcomponents:httpclient:4.3.1'
-        compile 'com.fasterxml.jackson.core:jackson-core:2.3.1'
-        compile 'com.fasterxml.jackson.core:jackson-annotations:2.3.1'
-        compile 'com.fasterxml.jackson.core:jackson-databind:2.3.1'
+        compile 'com.fasterxml.jackson.core:jackson-core:2.6.0'
+        compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.0'
+        compile 'com.fasterxml.jackson.core:jackson-databind:2.6.0'
 
 
         compile 'com.sun.jersey:jersey-client:1.17.1'

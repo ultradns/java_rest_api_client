@@ -38,10 +38,6 @@ public class ClientData {
 
     @Override
     public String toString() {
-        return "ClientData{" +
-                "status=" + status +
-                ", body='" + body + '\'' +
-                ", headers=" + headers +
-                '}';
+        return "ClientData{" + "status=" + status + ", body='" + body + '\'' + ", headers=" + headers + '}';
     }
 }

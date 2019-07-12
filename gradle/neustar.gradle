@@ -9,7 +9,7 @@
 
 task createWrapper(type: Wrapper) {
   description = "Create a gradle wrapper for you project"
-  gradleVersion = '1.6'
+  gradleVersion = '3.1'
 }
 
 
@@ -86,8 +86,7 @@ allprojects {
   apply plugin: 'java'
   apply plugin: 'maven'
   apply plugin: 'signing'
-  apply from: rootProject.file('gradle/cucumber.gradle')
-  
+
   
   // update runtime classpath to include conf dir BEFORE applying application to make this easy
   def conf_dir = project.file("conf")

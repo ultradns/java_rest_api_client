@@ -1,61 +1,33 @@
 /**
- * Copyright 2000-2013 NeuStar, Inc. All rights reserved.
- * NeuStar, the Neustar logo and related names and logos are registered
- * trademarks, service marks or tradenames of NeuStar, Inc. All other
- * product names, company names, marks, logos and symbols may be trademarks
- * of their respective owners.
+ * Copyright 2000-2013 NeuStar, Inc. All rights reserved. NeuStar, the Neustar logo and related names and logos are
+ * registered trademarks, service marks or tradenames of NeuStar, Inc. All other product names, company names, marks,
+ * logos and symbols may be trademarks of their respective owners.
  */
 package biz.neustar.ultra.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 /**
  * RR Set.
- * 
+ *
  * @author nupadhyay
- * 
  */
 @JsonInclude(Include.NON_DEFAULT)
-public class RRSet {
+public class RRSet implements Serializable {
 
     /**
-     * Empty constructor.
+     * The Serial version UID.
      */
-    public RRSet() {
-        super();
-    }
-
-    /**
-     * Parameterized constructor.
-     * 
-     * @param zoneName
-     *            - Zone Name
-     * @param ownerName
-     *            - Owner Name
-     * @param rrtype
-     *            - RR type
-     * @param ttl
-     *            - TTL
-     * @param rdata
-     *            - RR Data
-     */
-    public RRSet(String zoneName, String ownerName, String rrtype, Integer ttl,
-                 List<String> rdata) {
-        super();
-        this.zoneName = zoneName;
-        this.ownerName = ownerName;
-        this.rrtype = rrtype;
-        this.ttl = ttl;
-        this.rdata = rdata;
-    }
-
+    private static final long serialVersionUID = 1L;
     /**
      * The domain name of the apex of the zone.
      */
@@ -64,14 +36,6 @@ public class RRSet {
      * The domain name of the owner of the RRSet.
      */
     private String ownerName;
-    /**
-     * A user-defined name for the RRSet.
-     */
-    private String title;
-    /**
-     * Version of RRSet. Each update should increase this value.
-     */
-    private long version;
     /**
      * Resource record type for the RRSet.
      */
@@ -88,6 +52,18 @@ public class RRSet {
     private List<String> rdata = Lists.newLinkedList();
 
     /**
+     * List to maintain the system generated NS records.
+     */
+    @JsonInclude(Include.NON_EMPTY)
+    private List<Boolean> systemGenerated = Lists.newLinkedList();
+
+    /**
+     * The rdataguids in the rrsets.
+     */
+    @JsonInclude(Include.NON_EMPTY)
+    private List<String> rdataguids = Lists.newLinkedList();
+
+    /**
      * RRSIG information for the RRSet. Present only for signed zones.
      */
     private List<RRSigs> rrsigs = Lists.newLinkedList();
@@ -98,8 +74,59 @@ public class RRSet {
     private Map<String, Object> profile = Maps.newLinkedHashMap();
 
     /**
+     * Empty constructor.
+     */
+    public RRSet() {
+        super();
+    }
+
+    /**
+     * Parameterized constructor.
+     *
+     * @param zoneName  - Zone Name
+     * @param ownerName - Owner Name
+     * @param rrtype    - RR type
+     * @param ttl       - TTL
+     * @param rdata     - RR Data
+     * @param rrsigs    - {@link RRSigs}
+     */
+    public RRSet(String zoneName, String ownerName, String rrtype, Integer ttl, List<String> rdata,
+            List<RRSigs> rrsigs) {
+        super();
+        this.zoneName = zoneName;
+        this.ownerName = ownerName;
+        this.rrtype = rrtype;
+        this.ttl = ttl;
+        this.rdata = rdata;
+        this.rrsigs = rrsigs;
+    }
+
+    /**
+     * Parameterized constructor.
+     *
+     * @param zoneName   - Zone Name
+     * @param ownerName  - Owner Name
+     * @param rrtype     - RR type
+     * @param ttl        - TTL
+     * @param rdata      - RR Data
+     * @param rdataguids - RR Data GUIDs
+     * @param rrsigs     - {@link RRSigs}
+     */
+    public RRSet(String zoneName, String ownerName, String rrtype, Integer ttl, List<String> rdata,
+            List<String> rdataguids, List<RRSigs> rrsigs) {
+        super();
+        this.zoneName = zoneName;
+        this.ownerName = ownerName;
+        this.rrtype = rrtype;
+        this.ttl = ttl;
+        this.rdata = rdata;
+        this.rdataguids = rdataguids;
+        this.rrsigs = rrsigs;
+    }
+
+    /**
      * Get zone name.
-     * 
+     *
      * @return the zoneName
      */
     public final String getZoneName() {
@@ -108,9 +135,8 @@ public class RRSet {
 
     /**
      * Set zone name.
-     * 
-     * @param zoneName
-     *            the zoneName to set
+     *
+     * @param zoneName the zoneName to set
      */
     public final void setZoneName(String zoneName) {
         this.zoneName = zoneName;
@@ -118,7 +144,7 @@ public class RRSet {
 
     /**
      * Get owner name.
-     * 
+     *
      * @return the ownerName
      */
     public final String getOwnerName() {
@@ -127,55 +153,16 @@ public class RRSet {
 
     /**
      * Set owner name.
-     * 
-     * @param ownerName
-     *            the ownerName to set
+     *
+     * @param ownerName the ownerName to set
      */
     public final void setOwnerName(String ownerName) {
         this.ownerName = ownerName;
     }
 
     /**
-     * Get title.
-     * 
-     * @return the title
-     */
-    public final String getTitle() {
-        return title;
-    }
-
-    /**
-     * Set title.
-     * 
-     * @param title
-     *            the title to set
-     */
-    public final void setTitle(String title) {
-        this.title = title;
-    }
-
-    /**
-     * Get version.
-     * 
-     * @return the version
-     */
-    public final long getVersion() {
-        return version;
-    }
-
-    /**
-     * Set version.
-     * 
-     * @param version
-     *            the version to set
-     */
-    public final void setVersion(long version) {
-        this.version = version;
-    }
-
-    /**
      * Get RR type.
-     * 
+     *
      * @return the rrtype
      */
     public final String getRrtype() {
@@ -184,9 +171,8 @@ public class RRSet {
 
     /**
      * To set RR Type.
-     * 
-     * @param rrtype
-     *            the rrtype to set
+     *
+     * @param rrtype the rrtype to set
      */
     public final void setRrtype(String rrtype) {
         this.rrtype = rrtype;
@@ -194,7 +180,7 @@ public class RRSet {
 
     /**
      * Get TTL.
-     * 
+     *
      * @return the ttl
      */
     public final Integer getTtl() {
@@ -203,9 +189,8 @@ public class RRSet {
 
     /**
      * Set TTL.
-     * 
-     * @param ttl
-     *            the ttl to set
+     *
+     * @param ttl the ttl to set
      */
     public final void setTtl(Integer ttl) {
         this.ttl = ttl;
@@ -213,7 +198,7 @@ public class RRSet {
 
     /**
      * Set RData.
-     * 
+     *
      * @return the rdata
      */
     public final List<String> getRdata() {
@@ -222,17 +207,24 @@ public class RRSet {
 
     /**
      * Get RData.
-     * 
-     * @param rdata
-     *            the rdata to set
+     *
+     * @param rdata the rdata to set
      */
     public final void setRdata(List<String> rdata) {
         this.rdata = rdata;
     }
 
+    public List<String> getRdataguids() {
+        return rdataguids;
+    }
+
+    public void setRdataguids(List<String> rdataguids) {
+        this.rdataguids = rdataguids;
+    }
+
     /**
      * Get rrsigs.
-     * 
+     *
      * @return the rrsigs
      */
     public final List<RRSigs> getRrsigs() {
@@ -241,9 +233,8 @@ public class RRSet {
 
     /**
      * Set RR rrsigs.
-     * 
-     * @param rrsigs
-     *            the rrsigs to set
+     *
+     * @param rrsigs the rrsigs to set
      */
     public final void setRrsigs(List<RRSigs> rrsigs) {
         this.rrsigs = rrsigs;
@@ -251,7 +242,7 @@ public class RRSet {
 
     /**
      * Get profile.
-     * 
+     *
      * @return the profile
      */
     public final Map<String, Object> getProfile() {
@@ -260,42 +251,63 @@ public class RRSet {
 
     /**
      * Set profile.
-     * 
-     * @param profile
-     *            - the profile to set
+     *
+     * @param profile - the profile to set
      */
     public final void setProfile(Map<String, Object> profile) {
         this.profile = profile;
     }
 
+    /**
+     * Returns list of boolean values for the records to specify whether the
+     * record is system generated or not.
+     *
+     * @return - list of boolean values.
+     */
+    public List<Boolean> getSystemGenerated() {
+        return systemGenerated;
+    }
+
+    /**
+     * Set system generated record's boolean value.
+     * @param systemGenerated - {@link List<Boolean>}
+     */
+    public void setSystemGenerated(List<Boolean> systemGenerated) {
+        this.systemGenerated = systemGenerated;
+    }
+
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     @Override
     public final String toString() {
-        return Objects.toStringHelper(this).add("ttl", getTtl())
-                .add("version", getVersion()).add("ownerName", getOwnerName())
-                .add("rdata", getRdata()).add("rrsigs", getRrsigs())
-                .add("rrtype", getRrtype()).add("title", getTitle())
-                .add("zoneName", getZoneName()).add("profile", getProfile())
+        return MoreObjects.toStringHelper(this)
+                .add("ttl", getTtl())
+                .add("ownerName", getOwnerName())
+                .add("rdata", getRdata())
+                .add("rrsigs", getRrsigs())
+                .add("rrtype", getRrtype())
+                .add("zoneName", getZoneName())
+                .add("profile", getProfile())
                 .toString();
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
     public final int hashCode() {
-        return Objects.hashCode(getTtl(), getRrtype(), getZoneName(), getRdata(), getProfile());
+        return Objects.hashCode(getZoneName(), getOwnerName(), getRrtype(), getTtl(), getRdata(), getRdataguids(),
+                getRrsigs(), getProfile());
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -305,53 +317,21 @@ public class RRSet {
             return false;
         }
         final RRSet other = (RRSet) obj;
-        isEqual = Objects.equal(getTtl(), other.getTtl()) && Objects.equal(getRrtype(), other.getRrtype())
-                && Objects.equal(getZoneName(), other.getZoneName()) && Objects.equal(getRdata(), other.getRdata())
-                && Objects.equal(getProfile(), other.getProfile());
+        isEqual =
+                Objects.equal(getZoneName(), other.getZoneName()) && Objects.equal(getOwnerName(), other.getOwnerName())
+                        && Objects.equal(getRrtype(), other.getRrtype()) && Objects.equal(getTtl(), other.getTtl())
+                        && Objects.equal(getRdata(), other.getRdata()) && Objects.equal(getRdataguids(),
+                        other.getRdataguids()) && Objects.equal(getRrsigs(), other.getRrsigs()) && Objects.equal(
+                        getProfile(), other.getProfile());
         return isEqual;
     }
 
     /**
      * RRSIG information for the RRSet.
-     * 
+     *
      * @author nupadhyay
-     * 
      */
-    public static class RRSigs {
-
-        /**
-         * Empty constructor.
-         */
-        public RRSigs() {
-            super();
-        }
-
-        /**
-         * Parameterized constructor.
-         * 
-         * @param algorithm
-         *            - Algorithm
-         * @param expiration
-         *            - Expiration
-         * @param inception
-         *            - Inception
-         * @param keyTag
-         *            - Key tag.
-         * @param signerName
-         *            - Signer Name.
-         * @param signature
-         *            - Signature.
-         */
-        public RRSigs(int algorithm, String expiration, String inception, int keyTag, String signerName,
-                String signature) {
-            super();
-            this.algorithm = algorithm;
-            this.expiration = expiration;
-            this.inception = inception;
-            this.keyTag = keyTag;
-            this.signerName = signerName;
-            this.signature = signature;
-        }
+    public static class RRSigs implements Serializable {
 
         /**
          * Algorithm used for rrsig.
@@ -379,8 +359,36 @@ public class RRSet {
         private String signature;
 
         /**
+         * Empty constructor.
+         */
+        public RRSigs() {
+            super();
+        }
+
+        /**
+         * Parameterized constructor.
+         *
+         * @param algorithm  - Algorithm
+         * @param expiration - Expiration
+         * @param inception  - Inception
+         * @param keyTag     - Key tag.
+         * @param signerName - Signer Name.
+         * @param signature  - Signature.
+         */
+        public RRSigs(int algorithm, String expiration, String inception, int keyTag, String signerName,
+                String signature) {
+            super();
+            this.algorithm = algorithm;
+            this.expiration = expiration;
+            this.inception = inception;
+            this.keyTag = keyTag;
+            this.signerName = signerName;
+            this.signature = signature;
+        }
+
+        /**
          * Get algorithm.
-         * 
+         *
          * @return the algorithm.
          */
         public final int getAlgorithm() {
@@ -389,9 +397,8 @@ public class RRSet {
 
         /**
          * Set algorithm.
-         * 
-         * @param algorithm
-         *            the algorithm to set
+         *
+         * @param algorithm the algorithm to set
          */
         public final void setAlgorithm(int algorithm) {
             this.algorithm = algorithm;
@@ -399,7 +406,7 @@ public class RRSet {
 
         /**
          * Get expiration.
-         * 
+         *
          * @return the expiration
          */
         public final String getExpiration() {
@@ -408,9 +415,8 @@ public class RRSet {
 
         /**
          * To set expiration.
-         * 
-         * @param expiration
-         *            the expiration to set
+         *
+         * @param expiration the expiration to set
          */
         public final void setExpiration(String expiration) {
             this.expiration = expiration;
@@ -418,7 +424,7 @@ public class RRSet {
 
         /**
          * Get inception.
-         * 
+         *
          * @return the inception
          */
         public final String getInception() {
@@ -427,9 +433,8 @@ public class RRSet {
 
         /**
          * Set inception.
-         * 
-         * @param inception
-         *            the inception to set
+         *
+         * @param inception the inception to set
          */
         public final void setInception(String inception) {
             this.inception = inception;
@@ -437,7 +442,7 @@ public class RRSet {
 
         /**
          * Get Key Tag.
-         * 
+         *
          * @return the keyTag
          */
         public final int getKeyTag() {
@@ -446,9 +451,8 @@ public class RRSet {
 
         /**
          * Set key tag.
-         * 
-         * @param keyTag
-         *            the keyTag to set
+         *
+         * @param keyTag the keyTag to set
          */
         public final void setKeyTag(int keyTag) {
             this.keyTag = keyTag;
@@ -456,7 +460,7 @@ public class RRSet {
 
         /**
          * Set signer name.
-         * 
+         *
          * @return the signerName
          */
         public final String getSignerName() {
@@ -465,9 +469,8 @@ public class RRSet {
 
         /**
          * Get signer name.
-         * 
-         * @param signerName
-         *            the signerName to set
+         *
+         * @param signerName the signerName to set
          */
         public final void setSignerName(String signerName) {
             this.signerName = signerName;
@@ -475,7 +478,7 @@ public class RRSet {
 
         /**
          * Get signature.
-         * 
+         *
          * @return the signature
          */
         public final String getSignature() {
@@ -484,9 +487,8 @@ public class RRSet {
 
         /**
          * Set signature.
-         * 
-         * @param signature
-         *            the signature to set
+         *
+         * @param signature the signature to set
          */
         public final void setSignature(String signature) {
             this.signature = signature;
@@ -494,29 +496,35 @@ public class RRSet {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see java.lang.Object#toString()
          */
         @Override
         public final String toString() {
-            return Objects.toStringHelper(this).add("algorithm", getAlgorithm()).add("keyTag", getKeyTag())
-                    .add("signature", getSignature()).add("signerName", getSignerName())
-                    .add("inception", getInception()).add("expiration", getExpiration()).toString();
+            return MoreObjects.toStringHelper(this)
+                    .add("algorithm", getAlgorithm())
+                    .add("keyTag", getKeyTag())
+                    .add("signature", getSignature())
+                    .add("signerName", getSignerName())
+                    .add("inception", getInception())
+                    .add("expiration", getExpiration())
+                    .toString();
         }
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see java.lang.Object#hashCode()
          */
         @Override
         public final int hashCode() {
-            return Objects.hashCode(getAlgorithm(), getKeyTag(), getSignature(), getSignerName());
+            return Objects.hashCode(getAlgorithm(), getExpiration(), getInception(), getKeyTag(), getSignature(),
+                    getSignerName());
         }
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see java.lang.Object#equals(java.lang.Object)
          */
         @Override
@@ -526,9 +534,9 @@ public class RRSet {
                 return false;
             }
             final RRSigs other = (RRSigs) obj;
-            isEqual = Objects.equal(getAlgorithm(), other.getAlgorithm())
-                    && Objects.equal(getKeyTag(), other.getKeyTag())
-                    && Objects.equal(getSignature(), other.getSignature())
+            isEqual = Objects.equal(getAlgorithm(), other.getAlgorithm()) && Objects.equal(getExpiration(),
+                    other.getExpiration()) && Objects.equal(getInception(), other.getInception()) && Objects.equal(
+                    getKeyTag(), other.getKeyTag()) && Objects.equal(getSignature(), other.getSignature())
                     && Objects.equal(getSignerName(), other.getSignerName());
             return isEqual;
         }

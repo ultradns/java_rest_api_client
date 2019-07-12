@@ -2,6 +2,7 @@ package biz.neustar.ultra.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
@@ -9,9 +10,8 @@ import java.util.List;
 
 /**
  * NameServers.
- *
  */
-@JsonInclude(Include.NON_NULL)
+@JsonInclude(Include.NON_DEFAULT)
 public class NameServers {
 
     /**
@@ -95,10 +95,9 @@ public class NameServers {
             return false;
         }
         final NameServers other = (NameServers) obj;
-        isEqual =  Objects.equal(getOk(), other.getOk())
-                && Objects.equal(getMissing(), other.getMissing())
-                && Objects.equal(getIncorrect(), other.getIncorrect())
-                && Objects.equal(getUnknown(), other.getUnknown());
+        isEqual = Objects.equal(getOk(), other.getOk()) && Objects.equal(getMissing(), other.getMissing())
+                && Objects.equal(getIncorrect(), other.getIncorrect()) && Objects.equal(getUnknown(),
+                other.getUnknown());
         return isEqual;
     }
 
@@ -109,10 +108,12 @@ public class NameServers {
      */
     @Override
     public final String toString() {
-        return Objects.toStringHelper(this).add("ok", getOk())
+        return MoreObjects.toStringHelper(this)
+                .add("ok", getOk())
                 .add("missing", getMissing())
                 .add("incorrect", getIncorrect())
-                .add("unknown", getUnknown()).toString();
+                .add("unknown", getUnknown())
+                .toString();
     }
 
     /*

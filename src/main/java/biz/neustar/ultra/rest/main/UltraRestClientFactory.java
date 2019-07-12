@@ -24,10 +24,11 @@ import java.io.IOException;
  */
 public final class UltraRestClientFactory {
 
+    private static final AddAuth NO_AUTH = new NoAuth();
+
     private UltraRestClientFactory() {
         //Prevents instantiation
     }
-    private static final AddAuth NO_AUTH = new NoAuth();
 
     public static UltraRestClient createRestClientNoAuth(String baseUrl) {
         return new UltraRestClient(baseUrl, NO_AUTH);
@@ -37,19 +38,14 @@ public final class UltraRestClientFactory {
         return new UltraRestClient(baseUrl, new BasicAuth(user, password));
     }
 
-    public static UltraRestClient createRestClientOAuthUserPwd(String baseUrl,
-                                                               String user,
-                                                               String password,
-                                                               String authUrl) {
+    public static UltraRestClient createRestClientOAuthUserPwd(String baseUrl, String user, String password,
+            String authUrl) {
         return createRestClientOAuthUserPwdCallback(baseUrl, user, password, authUrl, null);
 
     }
 
-    public static UltraRestClient createRestClientOAuthUserPwdCallback(String baseUrl,
-                                                                       String user,
-                                                                       String password,
-                                                                       String authUrl,
-                                                                       OAuth.Callback callback) {
+    public static UltraRestClient createRestClientOAuthUserPwdCallback(String baseUrl, String user, String password,
+            String authUrl, OAuth.Callback callback) {
         //first generate the access token and bearer tokens
         UltraRestClient firstClient = createRestClientNoAuth(baseUrl);
         Form formData = new Form();
@@ -74,18 +70,13 @@ public final class UltraRestClientFactory {
         }
     }
 
-    public static UltraRestClient createRestClientOAuthTokens(String baseUrl,
-                                                              final String accessToken,
-                                                              final String refreshToken,
-                                                              final String authUrl) {
+    public static UltraRestClient createRestClientOAuthTokens(String baseUrl, final String accessToken,
+            final String refreshToken, final String authUrl) {
         return new UltraRestClient(baseUrl, new OAuth(accessToken, refreshToken, authUrl, null));
     }
 
-    public static UltraRestClient createRestClientOAuthTokensCallback(String baseUrl,
-                                                                      final String accessToken,
-                                                                      final String refreshToken,
-                                                                      final String authUrl,
-                                                                      OAuth.Callback callback) {
+    public static UltraRestClient createRestClientOAuthTokensCallback(String baseUrl, final String accessToken,
+            final String refreshToken, final String authUrl, OAuth.Callback callback) {
         return new UltraRestClient(baseUrl, new OAuth(accessToken, refreshToken, authUrl, callback));
     }
 

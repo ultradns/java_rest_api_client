@@ -23,11 +23,17 @@ import java.util.Properties;
 public final class Main {
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
+    private static final int ARGS_WITH_CREDENTIALS_AND_URL = 3;
+
     // For later use
     private static String refreshToken;
     private static String accessToken;
 
     private static String baseUrl;
+
+    private Main() {
+
+    }
 
     private static void readUserPassword(String fileName) {
         try (FileInputStream fis = new FileInputStream(fileName)) {
@@ -68,11 +74,11 @@ public final class Main {
         }
     }
 
-    private static void writeTokens(String fileName, String accessToken, String refreshToken) {
+    private static void writeTokens(String fileName, String inputAccessToken, String inputRefreshToken) {
         try (FileOutputStream fos = new FileOutputStream(fileName)) {
             Properties props = new Properties();
-            props.setProperty("accessToken", accessToken);
-            props.setProperty("refreshToken", refreshToken);
+            props.setProperty("accessToken", inputAccessToken);
+            props.setProperty("refreshToken", inputRefreshToken);
             props.store(fos, "");
         } catch (IOException e) {
             System.out.printf("unable to write to file %s", fileName);
@@ -81,18 +87,14 @@ public final class Main {
         }
     }
 
-    private Main() {
-
-    }
-
-    public static void main(String[] args) {
+    public static void main(String... args) {
         RestApiClient restApiClient = null;
         if (args.length == 0) {
             //try to load from property files
             restApiClient = getRestApiClient();
         }
 
-        if (args.length == 3) {
+        if (args.length == ARGS_WITH_CREDENTIALS_AND_URL) {
             restApiClient = getRestApiClient(args);
         }
 
@@ -110,16 +112,15 @@ public final class Main {
         }
     }
 
-    private static RestApiClient getRestApiClient(String[] args) {
+    private static RestApiClient getRestApiClient(String... args) {
         RestApiClient restApiClient;
         writeUserPassword("rest_user.txt", args[0], args[1], args[2]);
-        restApiClient = RestApiClient.buildRestApiClientWithUidPwd(args[0], args[1], args[2],
-                new OAuth.Callback() {
-                    @Override
-                    public void tokensUpdated(String newAccessToken, String newRefreshToken) {
-                        writeTokens("rest_tokens.txt", newAccessToken, newRefreshToken);
-                    }
-                });
+        restApiClient = RestApiClient.buildRestApiClientWithUidPwd(args[0], args[1], args[2], new OAuth.Callback() {
+            @Override
+            public void tokensUpdated(String newAccessToken, String newRefreshToken) {
+                writeTokens("rest_tokens.txt", newAccessToken, newRefreshToken);
+            }
+        });
         return restApiClient;
     }
 

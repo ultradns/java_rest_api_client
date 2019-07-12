@@ -1,51 +1,22 @@
 /**
- * Copyright 2000-2013 NeuStar, Inc. All rights reserved.
- * NeuStar, the Neustar logo and related names and logos are registered
- * trademarks, service marks or tradenames of NeuStar, Inc. All other
- * product names, company names, marks, logos and symbols may be trademarks
- * of their respective owners.
+ * Copyright 2000-2013 NeuStar, Inc. All rights reserved. NeuStar, the Neustar logo and related names and logos are
+ * registered trademarks, service marks or tradenames of NeuStar, Inc. All other product names, company names, marks,
+ * logos and symbols may be trademarks of their respective owners.
  */
 package biz.neustar.ultra.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
-
 
 /**
  * Zone Dto.
- * @author nupadhyay
  *
+ * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class Zone {
-
-    /**
-     * Empty constructor. 
-     */
-    public Zone() {
-        super();
-    }
-
-    /**
-     * Parameterized constructor.
-     * @param properties - ZoneProperties
-     * @param primaryCreateInfo - Primary zone info
-     * @param secondaryCreateInfo - Secondary zone info
-     * @param aliasCreateInfo - Alias zone info
-     */
-    public Zone(ZoneProperties properties, PrimaryZoneInfo primaryCreateInfo,
-                SecondaryZoneInfo secondaryCreateInfo, AliasZoneInfo aliasCreateInfo) {
-        super();
-        this.properties = properties;
-        this.primaryCreateInfo = primaryCreateInfo;
-        this.secondaryCreateInfo = secondaryCreateInfo;
-        this.aliasCreateInfo = aliasCreateInfo;
-        this.zoneProperties = properties;
-        this.primaryZoneInfo = primaryCreateInfo;
-        this.secondaryZoneInfo = secondaryCreateInfo;
-        this.aliasZoneInfo = aliasCreateInfo;
-    }
 
     private ZoneProperties properties;
 
@@ -65,6 +36,51 @@ public class Zone {
 
     private AliasZoneInfo aliasZoneInfo;
 
+    /**
+     * Empty constructor.
+     */
+    public Zone() {
+        super();
+    }
+
+    /**
+     * Parameterized constructor.
+     *
+     * @param properties          - ZoneProperties
+     * @param primaryCreateInfo   - Primary zone info
+     * @param secondaryCreateInfo - Secondary zone info
+     * @param aliasCreateInfo     - Alias zone info
+     */
+    public Zone(ZoneProperties properties, PrimaryZoneInfo primaryCreateInfo, SecondaryZoneInfo secondaryCreateInfo,
+            AliasZoneInfo aliasCreateInfo) {
+        super();
+        this.properties = properties;
+        this.primaryCreateInfo = primaryCreateInfo;
+        this.secondaryCreateInfo = secondaryCreateInfo;
+        this.aliasCreateInfo = aliasCreateInfo;
+        this.zoneProperties = properties;
+        this.primaryZoneInfo = primaryCreateInfo;
+        this.secondaryZoneInfo = secondaryCreateInfo;
+        this.aliasZoneInfo = aliasCreateInfo;
+    }
+
+    /**
+     * To instantiate zone object.
+     *
+     * @return - {@link Zone}
+     */
+    public static Zone getZoneInstance() {
+        Zone zone = new Zone();
+        zone.setProperties(new ZoneProperties());
+        PrimaryZoneInfo primaryZoneInfo = new PrimaryZoneInfo();
+        primaryZoneInfo.setNameServer(new NameServer());
+        zone.setPrimaryCreateInfo(primaryZoneInfo);
+        zone.setPrimaryZoneInfo(primaryZoneInfo);
+        zone.setAliasCreateInfo(new AliasZoneInfo());
+        zone.setAliasZoneInfo(new AliasZoneInfo());
+        return zone;
+    }
+
     public final ZoneProperties getProperties() {
         return properties;
     }
@@ -83,6 +99,7 @@ public class Zone {
 
     /**
      * Get secondary zone info.
+     *
      * @return the secondaryZoneInfo
      */
     public final SecondaryZoneInfo getSecondaryCreateInfo() {
@@ -91,6 +108,7 @@ public class Zone {
 
     /**
      * Set secondary zone.
+     *
      * @param secondaryCreateInfo the secondaryZoneInfo to set
      */
     public final void setSecondaryCreateInfo(SecondaryZoneInfo secondaryCreateInfo) {
@@ -99,6 +117,7 @@ public class Zone {
 
     /**
      * Get alias zone info.
+     *
      * @return the aliasZoneInfo
      */
     public final AliasZoneInfo getAliasCreateInfo() {
@@ -107,6 +126,7 @@ public class Zone {
 
     /**
      * Set alias zone info.
+     *
      * @param aliasCreateInfo the aliasZoneInfo to set
      */
     public final void setAliasCreateInfo(AliasZoneInfo aliasCreateInfo) {
@@ -120,11 +140,12 @@ public class Zone {
      */
     @Override
     public final String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("properties", getProperties())
                 .add("primaryCreateInfo", getPrimaryCreateInfo())
                 .add("secondaryCreateInfo", getSecondaryCreateInfo())
-                .add("aliasCreateInfo", getAliasCreateInfo()).toString();
+                .add("aliasCreateInfo", getAliasCreateInfo())
+                .toString();
     }
 
     /*
@@ -149,22 +170,6 @@ public class Zone {
         }
         final Zone other = (Zone) obj;
         return Objects.equal(getProperties(), other.getProperties());
-    }
-
-    /**
-     * To instantiate zone object.
-     * @return - {@link Zone}
-     */
-    public static Zone getZoneInstance() {
-        Zone zone = new Zone();
-        zone.setProperties(new ZoneProperties());
-        PrimaryZoneInfo primaryZoneInfo = new PrimaryZoneInfo();
-        primaryZoneInfo.setNameServer(new NameServer());
-        zone.setPrimaryCreateInfo(primaryZoneInfo);
-        zone.setPrimaryZoneInfo(primaryZoneInfo);
-        zone.setAliasCreateInfo(new AliasZoneInfo());
-        zone.setAliasZoneInfo(new AliasZoneInfo());
-        return zone;
     }
 
     public final ZoneProperties getZoneProperties() {

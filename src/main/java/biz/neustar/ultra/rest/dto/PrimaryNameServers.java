@@ -1,27 +1,30 @@
 /**
- * Copyright 2000-2013 NeuStar, Inc. All rights reserved.
- * NeuStar, the Neustar logo and related names and logos are registered
- * trademarks, service marks or tradenames of NeuStar, Inc. All other
- * product names, company names, marks, logos and symbols may be trademarks
- * of their respective owners.
+ * Copyright 2000-2013 NeuStar, Inc. All rights reserved. NeuStar, the Neustar logo and related names and logos are
+ * registered trademarks, service marks or tradenames of NeuStar, Inc. All other product names, company names, marks,
+ * logos and symbols may be trademarks of their respective owners.
  */
 package biz.neustar.ultra.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
  * Primary name servers.
- * @author nupadhyay
  *
+ * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class PrimaryNameServers {
 
-    
     /**
-     * Empty constructor. 
+     * Name server ip list.
+     */
+    private NameServerIpList nameServerIpList;
+
+    /**
+     * Empty constructor.
      */
     public PrimaryNameServers() {
         super();
@@ -29,6 +32,7 @@ public class PrimaryNameServers {
 
     /**
      * Parameterized constructor.
+     *
      * @param nameServerIpList - Name Server IP List.
      */
     public PrimaryNameServers(NameServerIpList nameServerIpList) {
@@ -37,11 +41,8 @@ public class PrimaryNameServers {
     }
 
     /**
-     *Name server ip list. 
-     */
-    private NameServerIpList nameServerIpList;
-    /**
      * Get name server IP list.
+     *
      * @return the nameServerIpList
      */
     public final NameServerIpList getNameServerIpList() {
@@ -50,6 +51,7 @@ public class PrimaryNameServers {
 
     /**
      * Set Name Server IP list.
+     *
      * @param nameServerIpList the nameServerIpList to set
      */
     public final void setNameServerIpList(NameServerIpList nameServerIpList) {
@@ -63,8 +65,7 @@ public class PrimaryNameServers {
      */
     @Override
     public final String toString() {
-        return Objects.toStringHelper(this)
-                .add("nameServerIpList", getNameServerIpList()).toString();
+        return MoreObjects.toStringHelper(this).add("nameServerIpList", getNameServerIpList()).toString();
     }
 
     /*
@@ -89,7 +90,7 @@ public class PrimaryNameServers {
             return false;
         }
         final PrimaryNameServers other = (PrimaryNameServers) obj;
-        isEqual =  Objects.equal(getNameServerIpList(), other.getNameServerIpList());
+        isEqual = Objects.equal(getNameServerIpList(), other.getNameServerIpList());
         return isEqual;
     }
 }

@@ -44,8 +44,7 @@ public final class JsonUtils {
      * @return - Return object of given type.
      * @throws java.io.IOException - {@link java.io.IOException}
      */
-    public static <T> T jsonToObject(final String content,
-                                     final Class<T> valueType) throws IOException {
+    public static <T> T jsonToObject(final String content, final Class<T> valueType) throws IOException {
         return MAPPER.readValue(content, valueType);
     }
 
@@ -57,8 +56,7 @@ public final class JsonUtils {
      * @return - Return object of given type.
      * @throws java.io.IOException - {@link java.io.IOException}
      */
-    public static <T> T jsonToObject(final InputStream contentStream,
-                                     final Class<T> valueType) throws IOException {
+    public static <T> T jsonToObject(final InputStream contentStream, final Class<T> valueType) throws IOException {
         return MAPPER.readValue(contentStream, valueType);
     }
 
@@ -69,8 +67,7 @@ public final class JsonUtils {
      * @return - JSON String.
      * @throws java.io.IOException - {@link java.io.IOException}
      */
-    public static String objectToJson(Object object)
-            throws IOException {
+    public static String objectToJson(Object object) throws IOException {
         return MAPPER.writeValueAsString(object);
     }
 

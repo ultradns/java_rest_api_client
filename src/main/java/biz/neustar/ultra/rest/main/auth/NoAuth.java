@@ -4,7 +4,7 @@ import biz.neustar.ultra.rest.main.UltraRestClient;
 import com.sun.jersey.api.client.WebResource;
 
 /**
- *  Dummy implementation of AddAuth that does nothing.
+ * Dummy implementation of AddAuth that does nothing.
  */
 public class NoAuth implements AddAuth {
     @Override
