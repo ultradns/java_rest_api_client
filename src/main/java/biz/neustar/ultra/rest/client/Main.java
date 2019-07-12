@@ -100,7 +100,7 @@ public final class Main {
 
         if (restApiClient == null) {
             System.err.println("Expected parameters: username password server_base_url");
-            System.err.println("Example: my_user my_password https://restapi.ultradns.com");
+            System.err.println("Example: my_user my_password https://api.ultradns.com");
             System.exit(1);
         }
 

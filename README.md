@@ -10,7 +10,7 @@ Gradle is used to build the code.  The Gradle Wrapper is included with the build
 
 If you want to build and test the code:
 
-./gradlew clean check test -Drest.username=USERNAME -Drest.password=PASSWORD -Drest.url=https://restapi.ultradns.com
+./gradlew clean check test -Drest.username=USERNAME -Drest.password=PASSWORD -Drest.url=https://api.ultradns.com
 
 Replace USERNAME and PASSWORD with your own username and password.
 
