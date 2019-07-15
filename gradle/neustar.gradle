@@ -253,15 +253,16 @@ allprojects {
   apply from: rootProject.file('gradle/bakery.gradle')
 }
 
-
-task showRepos << {
-  description = "List the current repositories"
-  println "Repositories: "
-  println repositories.collect { it.name }
+task showRepos {
+  doLast {
+    description = "List the current repositories"
+    println "Repositories: "
+    println repositories.collect { it.name }
+  }
 }
 
 // compile target for java, should narrow this to just java type projects..
-task compile << {
+task compile {
   dependsOn compileJava, compileTestJava
 }
 

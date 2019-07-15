@@ -99,9 +99,6 @@ test {
         ant.file file: "${jacocoConvention.coverageFileName}"
       }
       structure(name: project.name) {
-        classfiles {
-          fileset dir: "${sourceSets.main.output.classesDir}"
-        }
         sourcefiles {
           sourceSets.main.java.srcDirs.each {
             fileset(dir: it.absolutePath)

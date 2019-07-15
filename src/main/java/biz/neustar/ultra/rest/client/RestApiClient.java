@@ -35,14 +35,14 @@ import java.util.List;
  */
 
 public class RestApiClient {
-    public static final String V1_ACCOUNTS = "v1/accounts";
-    public static final String V1_VERSION = "v1/version";
-    public static final String V1_STATUS = "v1/status";
-    public static final String V1_ACCOUNTS1 = "v1/accounts/";
+    public static final String ACCOUNTS = "accounts";
+    public static final String VERSION = "version";
+    public static final String STATUS = "status";
+    public static final String ACCOUNTS1 = "accounts/";
     private static final Logger LOG = LoggerFactory.getLogger(RestApiClient.class);
-    private static final String V1_ZONES = "v1/zones/";
+    private static final String V1_ZONES = "zones/";
     private static final String RRSETS = "/rrsets/";
-    private static final String V1_AUTHORIZATION_TOKEN = "/v1/authorization/token";
+    private static final String AUTHORIZATION_TOKEN = "/authorization/token";
     private static final int BASE_10_RADIX = 10;
 
 
@@ -54,25 +54,25 @@ public class RestApiClient {
 
     public RestApiClient(String userName, String password, String url) {
         ultraRestClient = UltraRestClientFactory.createRestClientOAuthUserPwd(url, userName, password,
-                V1_AUTHORIZATION_TOKEN);
+                AUTHORIZATION_TOKEN);
     }
 
     public RestApiClient(String userName, String password, String url, OAuth.Callback callback) {
         ultraRestClient = UltraRestClientFactory.createRestClientOAuthUserPwdCallback(url, userName, password,
-                V1_AUTHORIZATION_TOKEN, callback);
+                AUTHORIZATION_TOKEN, callback);
     }
 
     public static RestApiClient buildRestApiClientWithTokens(String accessToken, String refreshToken, String url,
             OAuth.Callback callback) {
         return new RestApiClient(
                 UltraRestClientFactory.createRestClientOAuthTokensCallback(url, accessToken, refreshToken,
-                        V1_AUTHORIZATION_TOKEN, callback));
+                        AUTHORIZATION_TOKEN, callback));
     }
 
     public static RestApiClient buildRestApiClientWithUidPwd(String username, String password, String url,
             OAuth.Callback callback) {
         return new RestApiClient(UltraRestClientFactory.createRestClientOAuthUserPwdCallback(url, username, password,
-                V1_AUTHORIZATION_TOKEN, callback));
+                AUTHORIZATION_TOKEN, callback));
     }
 
     /**
@@ -119,7 +119,7 @@ public class RestApiClient {
     public ZoneInfoList getZonesOfAccount(String accountName, String q, int offset, int limit,
             UltraRestSharedConstant.ZoneListSortType sort, boolean reverse) throws IOException {
         MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
-        String url = V1_ACCOUNTS1 + accountName + "/zones";
+        String url = ACCOUNTS1 + accountName + "/zones";
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), ZoneInfoList.class);
@@ -277,7 +277,7 @@ public class RestApiClient {
      * @throws IOException - {@link IOException}
      */
     public AccountList getAccountDetails() throws IOException {
-        String url = V1_ACCOUNTS;
+        String url = ACCOUNTS;
         ClientData clientData = ultraRestClient.get(url);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), AccountList.class);
@@ -289,7 +289,7 @@ public class RestApiClient {
      * @return - The version of REST API server
      */
     public Version getVersion() throws IOException {
-        ClientData clientData = ultraRestClient.get(V1_VERSION);
+        ClientData clientData = ultraRestClient.get(VERSION);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), Version.class);
     }
@@ -300,7 +300,7 @@ public class RestApiClient {
      * @return - The status of REST API server
      */
     public Status getStatus() throws IOException {
-        ClientData clientData = ultraRestClient.get(V1_STATUS);
+        ClientData clientData = ultraRestClient.get(STATUS);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), Status.class);
     }
