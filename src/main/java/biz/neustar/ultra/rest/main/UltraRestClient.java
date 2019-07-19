@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Ultra Rest Client.
@@ -55,9 +56,12 @@ public final class UltraRestClient {
     private static final String DELETE = "DELETE";
     private static final String PUT = "PUT";
     private static final String PATCH = "PATCH";
+    private static final String CLIENT_IDENTIFIER =
+            "java-client-" + Optional.ofNullable(UltraRestClient.class.getPackage().getImplementationVersion())
+                    .orElse("unknown");
+    private static final String ULTRA_CLIENT = "UltraClient";
 
     private final String baseUrl;
-
     private final AddAuth addAuth;
 
     public UltraRestClient(String baseUrl, AddAuth addAuth) {
@@ -70,6 +74,7 @@ public final class UltraRestClient {
     }
 
     private ClientResponse method(String method, WebResource.Builder builder, boolean tryRefresh) {
+        builder.header(ULTRA_CLIENT, CLIENT_IDENTIFIER);
         ClientResponse clientResponse = addAuth.addAuth(builder).method(method, ClientResponse.class);
         if (tryRefresh && (clientResponse.getClientResponseStatus().getStatusCode() == HttpStatus.SC_BAD_REQUEST
                 || clientResponse.getClientResponseStatus().getStatusCode() == HttpStatus.SC_UNAUTHORIZED)) {

@@ -1,3 +1,6 @@
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+
 /**
  * Copyright 2012-2013 NeuStar, Inc. All rights reserved.
  * NeuStar, the Neustar logo and related names and logos are registered
@@ -12,6 +15,12 @@ task createWrapper(type: Wrapper) {
   gradleVersion = '3.1'
 }
 
+tasks.withType(GroovyCompile) {
+  configure(groovyOptions.forkOptions) {
+    memoryMaximumSize = '1g'
+    jvmArgs = ['-XX:MaxMetaspaceSize=512m', '-Xms512m', '-Xmx1g'] //For Java8
+  }
+}
 
 defaultTasks ''
 
@@ -20,7 +29,6 @@ apply from: file('gradle/generators.gradle')
 
 // version
 apply from: file('gradle/version.gradle')
-
 
 
 task gitBuildId {
@@ -33,19 +41,24 @@ task gitBuildId {
       // TODO: use a java git library?
       standardOutput = buildIdOut
       errorOutput = errorsOut
-      commandLine 'git', 'log', '-1', '--pretty=format:%ct', 'HEAD'
+      commandLine 'git', 'log', '-1', '--pretty=format:%h', 'HEAD'
     }
   } catch (Exception e) {
     buildIdOut.write('0'.getBytes())
     if (errorsOut.toString().contains("Not a git repository")) {
       extraInfo = "(Not a git repository and/or no commits found)\n" +
-        "Type: git init; git add *; git commit *;"
+              "Type: git init; git add *; git commit *;"
     }
   }
-  //OR? def buildIdOut = (long) ((new Date()).getTime() / 1000)
-  println "buildId = ${buildIdOut.toString()} ${extraInfo}"
+  DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss")
+  df.setTimeZone(TimeZone.getTimeZone("GMT"))
+
+  def date = new Date()
+  def dateString = df.format(date)
+  def buildId = "${dateString}.${buildIdOut.toString()}"
+  println "buildId = ${buildId} ${extraInfo}"
   ext.output = {
-    return buildIdOut.toString()
+    return buildId
   }
 }
 
@@ -141,13 +154,37 @@ allprojects {
   rootProject.ext.repoBaseUrl = repoBaseUrl
 
   repositories {
-      maven {
-          credentials {
-              username rootProject.ldapUsername
-              password rootProject.ldapPassword
-          }
-          url repoBaseUrl + "/content/groups/public/"
+    maven {
+      credentials {
+        username rootProject.ldapUsername
+        password rootProject.ldapPassword
       }
+      url repoBaseUrl + "/content/groups/public/"
+    }
+
+    maven {
+      credentials {
+        username rootProject.ldapUsername
+        password rootProject.ldapPassword
+      }
+      url repoBaseUrl + "/content/repositories/central/"
+    }
+
+    ivy {
+      credentials {
+        username rootProject.ldapUsername
+        password rootProject.ldapPassword
+      }
+      url repoBaseUrl + "/content/groups/public/biz/neustar/ultra"
+      layout 'pattern', {
+        artifact '[module]/[revision]/[artifact].[ext]'
+        ivy '[module]/[revision]/ivy.xml'
+      }
+    }
+
+    maven {
+      url 'http://repo.spring.io/milestone'
+    }
   }
 
   // Upload to maven repo ( Nexus )

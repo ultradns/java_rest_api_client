@@ -21,8 +21,6 @@ import biz.neustar.ultra.rest.main.auth.OAuth;
 import com.google.common.base.Strings;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.commons.httpclient.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
@@ -39,8 +37,7 @@ public class RestApiClient {
     public static final String VERSION = "version";
     public static final String STATUS = "status";
     public static final String ACCOUNTS1 = "accounts/";
-    private static final Logger LOG = LoggerFactory.getLogger(RestApiClient.class);
-    private static final String V1_ZONES = "zones/";
+    private static final String ZONES = "zones/";
     private static final String RRSETS = "/rrsets/";
     private static final String AUTHORIZATION_TOKEN = "/authorization/token";
     private static final int BASE_10_RADIX = 10;
@@ -90,7 +87,7 @@ public class RestApiClient {
         ZoneProperties zoneProperties = new ZoneProperties(zoneName, accountName, ZoneType.PRIMARY, null, null, null);
         PrimaryZoneInfo primaryZoneInfo = new PrimaryZoneInfo(null, CreateType.NEW, null, null, null, null, null, null);
         Zone zone = new Zone(zoneProperties, primaryZoneInfo, null, null);
-        String url = V1_ZONES;
+        String url = ZONES;
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(zone));
         checkClientData(clientData);
         return clientData.getBody();
@@ -133,7 +130,7 @@ public class RestApiClient {
      * @throws IOException - {@link IOException}
      */
     public ZoneOutInfo getZoneMetadata(String zoneName) throws IOException {
-        String url = V1_ZONES + zoneName;
+        String url = ZONES + zoneName;
         ClientData clientData = ultraRestClient.get(url);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), ZoneOutInfo.class);
@@ -145,7 +142,7 @@ public class RestApiClient {
      * @param zoneName - The name of the zone
      */
     public void deleteZone(String zoneName) {
-        String url = V1_ZONES + zoneName;
+        String url = ZONES + zoneName;
         ClientData clientData = ultraRestClient.delete(url);
         checkClientData(clientData);
         System.out.println(clientData.getStatus());
@@ -168,7 +165,7 @@ public class RestApiClient {
             UltraRestSharedConstant.RRListSortType sort, boolean reverse) throws IOException {
         MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
 
-        String url = V1_ZONES + zoneName + "/rrsets";
+        String url = ZONES + zoneName + "/rrsets";
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), RRSetList.class);
@@ -194,7 +191,7 @@ public class RestApiClient {
             UltraRestSharedConstant.RRListSortType sort, boolean reverse) throws IOException {
         MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
 
-        String url = V1_ZONES + zoneName + RRSETS + recordType;
+        String url = ZONES + zoneName + RRSETS + recordType;
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), RRSetList.class);
@@ -221,7 +218,7 @@ public class RestApiClient {
 
         RRSet rrSet = new RRSet(zoneName, ownerName, recordType, ttl, rdata, null);
 
-        String url = V1_ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
+        String url = ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(rrSet));
         checkClientData(clientData);
         return clientData.getBody();
@@ -248,7 +245,7 @@ public class RestApiClient {
 
         RRSet rrSet = new RRSet(zoneName, ownerName, recordType, ttl, rdata, null);
 
-        String url = V1_ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
+        String url = ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
         ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(rrSet));
         checkClientData(clientData);
         return clientData.getBody();
@@ -265,7 +262,7 @@ public class RestApiClient {
      *                   (foo.zonename.com.)
      */
     public void deleteRRSet(String zoneName, String recordType, String ownerName) {
-        String url = V1_ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
+        String url = ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
         ClientData clientData = ultraRestClient.delete(url);
         checkClientData(clientData);
     }
