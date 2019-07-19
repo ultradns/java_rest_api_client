@@ -5,10 +5,14 @@ import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.constants.ZoneType;
 import biz.neustar.ultra.rest.dto.AccountList;
 import biz.neustar.ultra.rest.dto.CreateType;
+import biz.neustar.ultra.rest.dto.NameServerIpList;
+import biz.neustar.ultra.rest.dto.PrimaryNameServers;
 import biz.neustar.ultra.rest.dto.PrimaryZoneInfo;
 import biz.neustar.ultra.rest.dto.RRSet;
 import biz.neustar.ultra.rest.dto.RRSetList;
+import biz.neustar.ultra.rest.dto.SecondaryZoneInfo;
 import biz.neustar.ultra.rest.dto.Status;
+import biz.neustar.ultra.rest.dto.TaskStatusInfo;
 import biz.neustar.ultra.rest.dto.Version;
 import biz.neustar.ultra.rest.dto.Zone;
 import biz.neustar.ultra.rest.dto.ZoneInfoList;
@@ -40,6 +44,7 @@ public class RestApiClient {
     private static final String ZONES = "zones/";
     private static final String RRSETS = "/rrsets/";
     private static final String AUTHORIZATION_TOKEN = "/authorization/token";
+    private static final String TASK = "/tasks/";
     private static final int BASE_10_RADIX = 10;
 
 
@@ -91,6 +96,67 @@ public class RestApiClient {
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(zone));
         checkClientData(clientData);
         return clientData.getBody();
+    }
+
+    /**
+     * Create a secondary zone.
+     *
+     * @param accountName              - The account that the zone will be created under. The user must have write
+     *                                 access for zones in that account
+     * @param zoneName                 - The name of the zone. The trailing . is optional. The zone name must not be in
+     *                                 use by anyone
+     * @param nameServerIpList         - The primary name servers of the source zone for the secondary zone.
+     * @param notificationEmailAddress - The Notification Email for a secondary zone.
+     * @return - The task id of the secondary zone creation request
+     * @throws IOException - {@link IOException}
+     */
+    public String createSecondaryZone(String accountName, String zoneName, NameServerIpList nameServerIpList,
+            String notificationEmailAddress) throws IOException {
+
+        ZoneProperties zoneProperties = new ZoneProperties(zoneName, accountName, ZoneType.SECONDARY, null, null, null);
+        SecondaryZoneInfo secondaryZoneInfo = new SecondaryZoneInfo(new PrimaryNameServers(nameServerIpList));
+        secondaryZoneInfo.setNotificationEmailAddress(notificationEmailAddress);
+        Zone zone = new Zone(zoneProperties, null, secondaryZoneInfo, null);
+        String url = ZONES;
+        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(zone));
+        checkClientData(clientData);
+        return clientData.getHeaders().getFirst("X-Task-Id");
+    }
+
+    /**
+     * Update a secondary zone.
+     *
+     * @param zoneName                 - The name of the zone. The trailing . is optional. The zone name must not be in
+     *                                 use by anyone
+     * @param nameServerIpList         - The primary name servers of the source zone for the secondary zone.
+     * @param notificationEmailAddress - The Notification Email for a secondary zone.
+     * @return - Status message
+     * @throws IOException - {@link IOException}
+     */
+    public String updateSecondaryZone(String zoneName, NameServerIpList nameServerIpList,
+            String notificationEmailAddress) throws IOException {
+
+        SecondaryZoneInfo secondaryZoneInfo = new SecondaryZoneInfo(new PrimaryNameServers(nameServerIpList));
+        secondaryZoneInfo.setNotificationEmailAddress(notificationEmailAddress);
+        Zone zone = new Zone(null, null, secondaryZoneInfo, null);
+        String url = ZONES + zoneName;
+        ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(zone));
+        checkClientData(clientData);
+        return clientData.getBody();
+    }
+
+    /**
+     * Get the task status.
+     *
+     * @param taskId - The task id.
+     * @return - The task status of the provided task id.
+     * @throws IOException - {@link IOException}
+     */
+    public TaskStatusInfo getTaskStatus(String taskId) throws IOException {
+        String url = TASK + taskId;
+        ClientData clientData = ultraRestClient.get(url);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), TaskStatusInfo.class);
     }
 
     private void checkClientData(ClientData clientData) {
