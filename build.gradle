@@ -5,7 +5,7 @@
 // one will be picked from either environment variable 'VERSION' or default to '0.0.0'
 // The version will then be appended with a build id that corresponds to the git revision commit timestamp
 allprojects {
-    version = '1.0.0'
+    version = '2.65.0'
 }
 
 // apply the common neustar gradle tasks to setup artifact repos, etc.
@@ -24,12 +24,9 @@ mainClassName = ext.serviceClassName
 // Add dependencies below..
 // For help with gradle, consult: http://www.gradle.org/docs/current/userguide/userguide_single.html
 
-
-ext.dropwizVer = '0.6.+'
-ext.dropwizAddonsVer = '0.0.22+'
-ext.slf4jVer = '1.7.+'
-ext.logbackVer = '1.0.+'
-ext.jacksonVer = '2.1.+'
+ext.slf4jVer = '1.7+'
+ext.logbackVer = '1.1+'
+ext.jacksonVer = '2.6.0'
 
 // For example: 
 ///////////////
@@ -48,11 +45,11 @@ allprojects {
         compile "ch.qos.logback:logback-core:$logbackVer"
         compile "ch.qos.logback:logback-classic:$logbackVer"
 
-        compile 'com.google.guava:guava:14.0.1'
+        compile 'com.google.guava:guava:18.0'
         compile 'org.apache.httpcomponents:httpclient:4.3.1'
-        compile 'com.fasterxml.jackson.core:jackson-core:2.3.1'
-        compile 'com.fasterxml.jackson.core:jackson-annotations:2.3.1'
-        compile 'com.fasterxml.jackson.core:jackson-databind:2.3.1'
+        compile "com.fasterxml.jackson.core:jackson-core:$jacksonVer"
+        compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVer"
+        compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVer"
 
 
         compile 'com.sun.jersey:jersey-client:1.17.1'

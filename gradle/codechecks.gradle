@@ -14,14 +14,16 @@ apply from: rootProject.file('gradle/jacoco.gradle')
 
 
 checkstyle {
-  // ignoreFailures = true
-  configFile = rootProject.file('gradle/config/checkstyle.xml')
+    ignoreFailures = false
+    toolVersion = "8.10.1"
+    configFile = rootProject.file('gradle/config/checkstyle.xml')
 }
 // exclude the checkstyle, findbugsTest, pmdTest on test source.. 
 gradle.startParameter.excludedTaskNames += ["checkstyleTest", "findbugsTest", "pmdTest"]
 
 pmd {
-  ruleSetFiles = rootProject.files('gradle/config/pmd.xml')
+    toolVersion = '5.4.1'
+    ruleSetFiles = rootProject.files('gradle/config/pmd.xml')
 }
 
 // even if the task fails (doesn't pass checks), we still try to write out the html report

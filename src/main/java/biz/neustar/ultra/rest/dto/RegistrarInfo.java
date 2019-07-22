@@ -5,12 +5,24 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.Objects;
 
 /**
- *
  * Registrar info.
- *
  */
-@JsonInclude(Include.NON_NULL)
+@JsonInclude(Include.NON_DEFAULT)
 public class RegistrarInfo {
+
+    /**
+     * Registrar.
+     */
+    private String registrar;
+
+    /**
+     * Whois Expiration.
+     */
+    private String whoisExpiration;
+    /**
+     * NameServers.
+     */
+    private NameServers nameServers;
 
     /**
      * Empty constructor.
@@ -21,38 +33,20 @@ public class RegistrarInfo {
 
     /**
      * Parameterized constructor.
+     *
      * @param registrar
-     * @param whoisNameServer
      * @param whoisExpiration
      * @param nameServers
      */
-    public RegistrarInfo(String registrar, String whoisNameServer, String whoisExpiration, NameServers nameServers) {
+    public RegistrarInfo(String registrar, String whoisExpiration, NameServers nameServers) {
         this.registrar = registrar;
-        this.whoisNameServer = whoisNameServer;
         this.whoisExpiration = whoisExpiration;
         this.nameServers = nameServers;
     }
 
     /**
-     * Registrar.
-     */
-    private String registrar;
-
-    /**
-     * Whois Nameserver.
-     */
-    private String whoisNameServer;
-
-    /**
-     * Whois Expiration.
-     */
-    private String whoisExpiration;
-    /**
-     * NameServers.
-     */
-    private NameServers nameServers;
-    /**
      * Get registrar.
+     *
      * @return the registrar
      */
     public final String getRegistrar() {
@@ -61,6 +55,7 @@ public class RegistrarInfo {
 
     /**
      * Set registrar.
+     *
      * @param registrar the registrar to set
      */
     public final void setRegistrar(String registrar) {
@@ -68,23 +63,8 @@ public class RegistrarInfo {
     }
 
     /**
-     * Get Whois NameServer.
-     * @return the whoisNameServer
-     */
-    public final String getWhoisNameServer() {
-        return whoisNameServer;
-    }
-
-    /**
-     * Set Whois NameServer.
-     * @param whoisNameServer the whoisNameServer to set
-     */
-    public final void setWhoisNameServer(String whoisNameServer) {
-        this.whoisNameServer = whoisNameServer;
-    }
-
-    /**
      * Get Whois Expiration.
+     *
      * @return the whoisExpiration
      */
     public final String getWhoisExpiration() {
@@ -93,6 +73,7 @@ public class RegistrarInfo {
 
     /**
      * Set Whois Expiration.
+     *
      * @param whoisExpiration the whoisExpiration to set
      */
     public final void setWhoisExpiration(String whoisExpiration) {
@@ -101,6 +82,7 @@ public class RegistrarInfo {
 
     /**
      * Get NameServers.
+     *
      * @return the nameServers
      */
     public final NameServers getNameServers() {
@@ -109,6 +91,7 @@ public class RegistrarInfo {
 
     /**
      * Set NameServers.
+     *
      * @param nameServers the nameServers to set
      */
     public final void setNameServers(NameServers nameServers) {
@@ -122,7 +105,7 @@ public class RegistrarInfo {
      */
     @Override
     public final int hashCode() {
-        return Objects.hashCode(getRegistrar(), getWhoisExpiration(), getWhoisNameServer(), getNameServers());
+        return Objects.hashCode(getRegistrar(), getWhoisExpiration(), getNameServers());
     }
 
     /*
@@ -132,25 +115,19 @@ public class RegistrarInfo {
      */
     @Override
     public final boolean equals(final Object obj) {
-        boolean isEqual = true;
+        boolean isEqual;
         if (!(obj instanceof RegistrarInfo)) {
             return false;
         }
         final RegistrarInfo other = (RegistrarInfo) obj;
-        isEqual =  Objects.equal(getRegistrar(), other.getRegistrar())
-                && Objects.equal(getWhoisExpiration(), other.getWhoisExpiration())
-                && Objects.equal(getWhoisNameServer(), other.getWhoisNameServer())
-                && Objects.equal(getNameServers(), other.getNameServers());
+        isEqual = Objects.equal(getRegistrar(), other.getRegistrar()) && Objects.equal(getWhoisExpiration(),
+                other.getWhoisExpiration()) && Objects.equal(getNameServers(), other.getNameServers());
         return isEqual;
     }
 
     @Override
     public String toString() {
-        return "RegistrarInfo{" +
-                "registrar='" + registrar + '\'' +
-                ", whoisNameServer='" + whoisNameServer + '\'' +
-                ", whoisExpiration='" + whoisExpiration + '\'' +
-                ", nameServers=" + nameServers +
-                "} " + super.toString();
+        return "RegistrarInfo{" + "registrar='" + registrar + '\'' + ", whoisExpiration='" + whoisExpiration + '\''
+                + ", nameServers=" + nameServers + "} " + super.toString();
     }
 }

@@ -29,8 +29,6 @@ public class Version {
 
     @Override
     public String toString() {
-        return "Version{" +
-                "version='" + version + '\'' +
-                '}';
+        return "Version{" + "version='" + version + '\'' + '}';
     }
 }

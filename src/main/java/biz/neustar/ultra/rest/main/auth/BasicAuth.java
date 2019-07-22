@@ -7,7 +7,7 @@ import org.apache.commons.codec.binary.StringUtils;
 
 /**
  * Basic Auth implementation of AddAuth.
- *
+ * <p>
  * User provides the username and password required for Basic Auth.
  */
 public class BasicAuth implements AddAuth {

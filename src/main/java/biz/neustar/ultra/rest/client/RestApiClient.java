@@ -1,15 +1,18 @@
 package biz.neustar.ultra.rest.client;
 
 import biz.neustar.ultra.rest.client.util.JsonUtils;
-import biz.neustar.ultra.rest.constants.CreateType;
-import biz.neustar.ultra.rest.constants.RRListSortType;
-import biz.neustar.ultra.rest.constants.ZoneListSortType;
+import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.constants.ZoneType;
 import biz.neustar.ultra.rest.dto.AccountList;
+import biz.neustar.ultra.rest.dto.CreateType;
+import biz.neustar.ultra.rest.dto.NameServerIpList;
+import biz.neustar.ultra.rest.dto.PrimaryNameServers;
 import biz.neustar.ultra.rest.dto.PrimaryZoneInfo;
 import biz.neustar.ultra.rest.dto.RRSet;
 import biz.neustar.ultra.rest.dto.RRSetList;
+import biz.neustar.ultra.rest.dto.SecondaryZoneInfo;
 import biz.neustar.ultra.rest.dto.Status;
+import biz.neustar.ultra.rest.dto.TaskStatusInfo;
 import biz.neustar.ultra.rest.dto.Version;
 import biz.neustar.ultra.rest.dto.Zone;
 import biz.neustar.ultra.rest.dto.ZoneInfoList;
@@ -21,120 +24,165 @@ import biz.neustar.ultra.rest.main.UltraRestClientFactory;
 import biz.neustar.ultra.rest.main.auth.OAuth;
 import com.google.common.base.Strings;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.httpclient.HttpStatus;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.util.List;
 
 /**
- * Copyright 2012-2013 NeuStar, Inc. All rights reserved. NeuStar, the Neustar
- * logo and related names and logos are registered trademarks, service marks or
- * tradenames of NeuStar, Inc. All other product names, company names, marks,
+ * Copyright 2012-2013 NeuStar, Inc. All rights reserved. NeuStar, the Neustar logo and related names and logos are
+ * registered trademarks, service marks or tradenames of NeuStar, Inc. All other product names, company names, marks,
  * logos and symbols may be trademarks of their respective owners.
  */
 
 public class RestApiClient {
-    private static final Logger LOG = LoggerFactory.getLogger(RestApiClient.class);
-
-    private static final String V1_ZONES = "v1/zones/";
+    public static final String ACCOUNTS = "accounts";
+    public static final String VERSION = "version";
+    public static final String STATUS = "status";
+    public static final String ACCOUNTS1 = "accounts/";
+    private static final String ZONES = "zones/";
     private static final String RRSETS = "/rrsets/";
-    private static final String V1_AUTHORIZATION_TOKEN = "/v1/authorization/token";
-    public static final String V1_ACCOUNTS = "v1/accounts";
-    public static final String V1_VERSION = "v1/version";
-    public static final String V1_STATUS = "v1/status";
-    public static final String V1_ACCOUNTS1 = "v1/accounts/";
+    private static final String AUTHORIZATION_TOKEN = "/authorization/token";
+    private static final String TASK = "/tasks/";
+    private static final int BASE_10_RADIX = 10;
+
 
     private final UltraRestClient ultraRestClient;
-
-    public static RestApiClient buildRestApiClientWithTokens(String accessToken,
-                                                             String refreshToken,
-                                                             String url,
-                                                             OAuth.Callback callback) {
-        return new RestApiClient(
-                UltraRestClientFactory.createRestClientOAuthTokensCallback(url, accessToken,
-                        refreshToken, V1_AUTHORIZATION_TOKEN, callback));
-    }
-
-    public static RestApiClient buildRestApiClientWithUidPwd(String username,
-                                                             String password,
-                                                             String url,
-                                                             OAuth.Callback callback) {
-        return new RestApiClient(
-                UltraRestClientFactory.createRestClientOAuthUserPwdCallback(url, username,
-                        password, V1_AUTHORIZATION_TOKEN, callback));
-    }
 
     private RestApiClient(UltraRestClient ultraRestClient) {
         this.ultraRestClient = ultraRestClient;
     }
 
     public RestApiClient(String userName, String password, String url) {
-        ultraRestClient = UltraRestClientFactory.createRestClientOAuthUserPwd(url,
-                userName, password, V1_AUTHORIZATION_TOKEN);
+        ultraRestClient = UltraRestClientFactory.createRestClientOAuthUserPwd(url, userName, password,
+                AUTHORIZATION_TOKEN);
     }
 
     public RestApiClient(String userName, String password, String url, OAuth.Callback callback) {
-        ultraRestClient = UltraRestClientFactory.createRestClientOAuthUserPwdCallback(url,
-                userName, password, V1_AUTHORIZATION_TOKEN, callback);
+        ultraRestClient = UltraRestClientFactory.createRestClientOAuthUserPwdCallback(url, userName, password,
+                AUTHORIZATION_TOKEN, callback);
+    }
+
+    public static RestApiClient buildRestApiClientWithTokens(String accessToken, String refreshToken, String url,
+            OAuth.Callback callback) {
+        return new RestApiClient(
+                UltraRestClientFactory.createRestClientOAuthTokensCallback(url, accessToken, refreshToken,
+                        AUTHORIZATION_TOKEN, callback));
+    }
+
+    public static RestApiClient buildRestApiClientWithUidPwd(String username, String password, String url,
+            OAuth.Callback callback) {
+        return new RestApiClient(UltraRestClientFactory.createRestClientOAuthUserPwdCallback(url, username, password,
+                AUTHORIZATION_TOKEN, callback));
     }
 
     /**
      * Create a primary zone.
      *
-     * @param accountName - The account that the zone will be created under. The user
-     *                    must have write access for zones in that account
-     * @param zoneName    - The name of the zone. The trailing . is optional. The zone
-     *                    name must not be in use by anyone
+     * @param accountName - The account that the zone will be created under. The user must have write access for zones
+     *                    in that account
+     * @param zoneName    - The name of the zone. The trailing . is optional. The zone name must not be in use by
+     *                    anyone
      * @return - Status message
      * @throws IOException - {@link IOException}
      */
-    public String createPrimaryZone(String accountName, String zoneName)
-            throws IOException {
+    public String createPrimaryZone(String accountName, String zoneName) throws IOException {
 
-        ZoneProperties zoneProperties = new ZoneProperties(zoneName,
-                accountName, ZoneType.PRIMARY, null, null, null);
-        PrimaryZoneInfo primaryZoneInfo = new PrimaryZoneInfo(null,
-                CreateType.NEW, null, null, null);
+        ZoneProperties zoneProperties = new ZoneProperties(zoneName, accountName, ZoneType.PRIMARY, null, null, null);
+        PrimaryZoneInfo primaryZoneInfo = new PrimaryZoneInfo(null, CreateType.NEW, null, null, null, null, null, null);
         Zone zone = new Zone(zoneProperties, primaryZoneInfo, null, null);
-        String url = V1_ZONES;
+        String url = ZONES;
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(zone));
         checkClientData(clientData);
         return clientData.getBody();
     }
 
+    /**
+     * Create a secondary zone.
+     *
+     * @param accountName              - The account that the zone will be created under. The user must have write
+     *                                 access for zones in that account
+     * @param zoneName                 - The name of the zone. The trailing . is optional. The zone name must not be in
+     *                                 use by anyone
+     * @param nameServerIpList         - The primary name servers of the source zone for the secondary zone.
+     * @param notificationEmailAddress - The Notification Email for a secondary zone.
+     * @return - The task id of the secondary zone creation request
+     * @throws IOException - {@link IOException}
+     */
+    public String createSecondaryZone(String accountName, String zoneName, NameServerIpList nameServerIpList,
+            String notificationEmailAddress) throws IOException {
+
+        ZoneProperties zoneProperties = new ZoneProperties(zoneName, accountName, ZoneType.SECONDARY, null, null, null);
+        SecondaryZoneInfo secondaryZoneInfo = new SecondaryZoneInfo(new PrimaryNameServers(nameServerIpList));
+        secondaryZoneInfo.setNotificationEmailAddress(notificationEmailAddress);
+        Zone zone = new Zone(zoneProperties, null, secondaryZoneInfo, null);
+        String url = ZONES;
+        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(zone));
+        checkClientData(clientData);
+        return clientData.getHeaders().getFirst("X-Task-Id");
+    }
+
+    /**
+     * Update a secondary zone.
+     *
+     * @param zoneName                 - The name of the zone. The trailing . is optional. The zone name must not be in
+     *                                 use by anyone
+     * @param nameServerIpList         - The primary name servers of the source zone for the secondary zone.
+     * @param notificationEmailAddress - The Notification Email for a secondary zone.
+     * @return - Status message
+     * @throws IOException - {@link IOException}
+     */
+    public String updateSecondaryZone(String zoneName, NameServerIpList nameServerIpList,
+            String notificationEmailAddress) throws IOException {
+
+        SecondaryZoneInfo secondaryZoneInfo = new SecondaryZoneInfo(new PrimaryNameServers(nameServerIpList));
+        secondaryZoneInfo.setNotificationEmailAddress(notificationEmailAddress);
+        Zone zone = new Zone(null, null, secondaryZoneInfo, null);
+        String url = ZONES + zoneName;
+        ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(zone));
+        checkClientData(clientData);
+        return clientData.getBody();
+    }
+
+    /**
+     * Get the task status.
+     *
+     * @param taskId - The task id.
+     * @return - The task status of the provided task id.
+     * @throws IOException - {@link IOException}
+     */
+    public TaskStatusInfo getTaskStatus(String taskId) throws IOException {
+        String url = TASK + taskId;
+        ClientData clientData = ultraRestClient.get(url);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), TaskStatusInfo.class);
+    }
+
     private void checkClientData(ClientData clientData) {
-        if (clientData.getStatus() >= 400) {
-            throw new RuntimeException("Status: " + clientData.getStatus()
-                    + ", Description: " + clientData.getBody());
+        if (clientData.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
+            throw new RuntimeException("Status: " + clientData.getStatus() + ", Description: " + clientData.getBody());
         }
     }
 
     /**
      * List zones for account.
      *
-     * @param accountName - One of the user's accounts. The user must have read access
-     *                    for zone in that account
-     * @param q           - The search parameters, in a hash. Valid keys are:
-     *                    name - substring match of the zone name
+     * @param accountName - One of the user's accounts. The user must have read access for zone in that account
+     * @param q           - The search parameters, in a hash. Valid keys are: name - substring match of the zone name
      *                    zone_type - one of : PRIMARY/SECONDARY/ALIAS
-     * @param offset      - The position in the list for the first returned element(0
-     *                    based)
+     * @param offset      - The position in the list for the first returned element(0 based)
      * @param limit       - The maximum number of zones to be returned
-     * @param sort        - The sort column used to order the list. Valid values for the
-     *                    sort field are: NAME/ACCOUNT_NAME/RECORD_COUNT/ZONE_TYPE
-     * @param reverse     - Whether the list is ascending(false) or descending(true).
-     *                    Defaults to true
+     * @param sort        - The sort column used to order the list. Valid values for the sort field are:
+     *                    NAME/ACCOUNT_NAME/RECORD_COUNT/ZONE_TYPE
+     * @param reverse     - Whether the list is ascending(false) or descending(true). Defaults to true
      * @return - {@link ZoneInfoList}
      * @throws IOException - {@link IOException}
      */
-    public ZoneInfoList getZonesOfAccount(String accountName, String q,
-                                          int offset, int limit, ZoneListSortType sort, boolean reverse)
-            throws IOException {
-        MultivaluedMap<String, String> queryParams = buildQueryParams(q,
-                offset, limit, sort, reverse);
-        String url = V1_ACCOUNTS1 + accountName + "/zones";
+    public ZoneInfoList getZonesOfAccount(String accountName, String q, int offset, int limit,
+            UltraRestSharedConstant.ZoneListSortType sort, boolean reverse) throws IOException {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
+        String url = ACCOUNTS1 + accountName + "/zones";
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), ZoneInfoList.class);
@@ -143,13 +191,12 @@ public class RestApiClient {
     /**
      * Get zone metadata.
      *
-     * @param zoneName - The name of the zone. The user must have read access to the
-     *                 zone.
+     * @param zoneName - The name of the zone. The user must have read access to the zone.
      * @return - {@link ZoneOutInfo}
      * @throws IOException - {@link IOException}
      */
     public ZoneOutInfo getZoneMetadata(String zoneName) throws IOException {
-        String url = V1_ZONES + zoneName;
+        String url = ZONES + zoneName;
         ClientData clientData = ultraRestClient.get(url);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), ZoneOutInfo.class);
@@ -161,7 +208,7 @@ public class RestApiClient {
      * @param zoneName - The name of the zone
      */
     public void deleteZone(String zoneName) {
-        String url = V1_ZONES + zoneName;
+        String url = ZONES + zoneName;
         ClientData clientData = ultraRestClient.delete(url);
         checkClientData(clientData);
         System.out.println(clientData.getStatus());
@@ -170,100 +217,75 @@ public class RestApiClient {
     /**
      * Returns the list of RRSets in the specified zone.
      *
-     * @param zoneName - The name of the zone. The user must have read access to the
-     *                 zone.
-     * @param q        - The search parameters, in a hash. Valid keys are:
-     *                 ttl - must match the TTL for the rrset
-     *                 owner - substring match of the owner name
-     *                 value - substring match of the first BIND field value
-     * @param offset   - The position in the list for the first returned element(0
-     *                 based)
+     * @param zoneName - The name of the zone. The user must have read access to the zone.
+     * @param q        - The search parameters, in a hash. Valid keys are: ttl - must match the TTL for the rrset owner
+     *                 - substring match of the owner name value - substring match of the first BIND field value
+     * @param offset   - The position in the list for the first returned element(0 based)
      * @param limit    - The maximum number of zones to be returned.
-     * @param sort     - The sort column used to order the list. Valid values for the
-     *                 sort field are: OWNER/TTL/TYPE
-     * @param reverse  - Whether the list is ascending(false) or descending(true).
-     *                 Defaults to true
+     * @param sort     - The sort column used to order the list. Valid values for the sort field are: OWNER/TTL/TYPE
+     * @param reverse  - Whether the list is ascending(false) or descending(true). Defaults to true
      * @return - {@link RRSetList}
      * @throws IOException - {@link IOException}
      */
-    public RRSetList getRRSets(String zoneName, String q, int offset,
-                               int limit, RRListSortType sort, boolean reverse) throws IOException {
-        MultivaluedMap<String, String> queryParams = buildQueryParams(q,
-                offset, limit, sort, reverse);
+    public RRSetList getRRSets(String zoneName, String q, int offset, int limit,
+            UltraRestSharedConstant.RRListSortType sort, boolean reverse) throws IOException {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
 
-        String url = V1_ZONES + zoneName + "/rrsets";
+        String url = ZONES + zoneName + "/rrsets";
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
-        return JsonUtils
-                .jsonToObject(clientData.getBody(), RRSetList.class);
+        return JsonUtils.jsonToObject(clientData.getBody(), RRSetList.class);
     }
 
     /**
      * Returns the list of RRSets in the specified zone of the specified type.
      *
      * @param zoneName   - The name of the zone.
-     * @param recordType - The type of the RRSets. This can be numeric (1) or if a
-     *                   well-known name is defined for the type (A), you can use it
-     *                   instead.
-     * @param q          - The search parameters, in a hash. Valid keys are:
-     *                   ttl - must match the TTL for the rrset
-     *                   owner - substring match of the owner name
-     *                   value - substring match of the first BIND field value
-     * @param offset     - The position in the list for the first returned element(0
-     *                   based)
+     * @param recordType - The type of the RRSets. This can be numeric (1) or if a well-known name is defined for the
+     *                   type (A), you can use it instead.
+     * @param q          - The search parameters, in a hash. Valid keys are: ttl - must match the TTL for the rrset
+     *                   owner - substring match of the owner name value - substring match of the first BIND field
+     *                   value
+     * @param offset     - The position in the list for the first returned element(0 based)
      * @param limit      - The maximum number of zones to be returned.
-     * @param sort       - The sort column used to order the list. Valid values for the
-     *                   sort field are: OWNER/TTL/TYPE
-     * @param reverse    - Whether the list is ascending(false) or descending(true).
-     *                   Defaults to true
+     * @param sort       - The sort column used to order the list. Valid values for the sort field are: OWNER/TTL/TYPE
+     * @param reverse    - Whether the list is ascending(false) or descending(true). Defaults to true
      * @return - {@link RRSetList}
      * @throws IOException - {@link IOException}
      */
-    public RRSetList getRRSetsByType(String zoneName, String recordType,
-                                     String q, int offset, int limit, RRListSortType sort, boolean reverse)
-            throws IOException {
-        MultivaluedMap<String, String> queryParams = buildQueryParams(q,
-                offset, limit, sort, reverse);
+    public RRSetList getRRSetsByType(String zoneName, String recordType, String q, int offset, int limit,
+            UltraRestSharedConstant.RRListSortType sort, boolean reverse) throws IOException {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
 
-        String url = V1_ZONES + zoneName + RRSETS + recordType;
+        String url = ZONES + zoneName + RRSETS + recordType;
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
-        return JsonUtils
-                .jsonToObject(clientData.getBody(), RRSetList.class);
+        return JsonUtils.jsonToObject(clientData.getBody(), RRSetList.class);
     }
 
     /**
      * Creates a new RRSet in the specified zone.
      *
-     * @param zoneName   - The zone that contains the RRSet.The trailing dot is
-     *                   optional.
-     * @param recordType - The type of the RRSet.This can be numeric (1) or if a
-     *                   well-known name is defined for the type (A), you can use it
-     *                   instead.
-     * @param ownerName  - The owner name for the RRSet. If no trailing dot is
-     *                   supplied, the owner_name is assumed to be relative (foo). If a
-     *                   trailing dot is supplied, the owner name is assumed to be
-     *                   absolute (foo.zonename.com.)
+     * @param zoneName   - The zone that contains the RRSet.The trailing dot is optional.
+     * @param recordType - The type of the RRSet.This can be numeric (1) or if a well-known name is defined for the type
+     *                   (A), you can use it instead.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
      * @param ttl        - The updated TTL value for the RRSet.
-     * @param rdata      - The updated BIND data for the RRSet as a string. If there is
-     *                   a single resource record in the RRSet, you can pass in the
-     *                   single string or an array with a single element. If there are
-     *                   multiple resource records in this RRSet, pass in a list of
-     *                   strings.
+     * @param rdata      - The updated BIND data for the RRSet as a string. If there is a single resource record in the
+     *                   RRSet, you can pass in the single string or an array with a single element. If there are
+     *                   multiple resource records in this RRSet, pass in a list of strings.
      * @return - Status message
      * @throws IOException - {@link IOException}
      */
-    public String createRRSet(String zoneName, String recordType,
-                              String ownerName, Integer ttl, List<String> rdata)
+    public String createRRSet(String zoneName, String recordType, String ownerName, Integer ttl, List<String> rdata)
             throws IOException {
 
-        RRSet rrSet = new RRSet(zoneName, ownerName, recordType,
-                ttl, rdata);
+        RRSet rrSet = new RRSet(zoneName, ownerName, recordType, ttl, rdata, null);
 
-        String url = V1_ZONES + zoneName + RRSETS + recordType + "/"
-                + ownerName;
-        ClientData clientData = ultraRestClient.post(url,
-                JsonUtils.objectToJson(rrSet));
+        String url = ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
+        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(rrSet));
         checkClientData(clientData);
         return clientData.getBody();
     }
@@ -271,35 +293,26 @@ public class RestApiClient {
     /**
      * Updates an existing RRSet in the specified zone.
      *
-     * @param zoneName   - The zone that contains the RRSet.The trailing dot is
-     *                   optional.
-     * @param recordType - The type of the RRSet.This can be numeric (1) or if a
-     *                   well-known name is defined for the type (A), you can use it
-     *                   instead.
-     * @param ownerName  - The owner name for the RRSet. If no trailing dot is
-     *                   supplied, the owner_name is assumed to be relative (foo). If a
-     *                   trailing dot is supplied, the owner name is assumed to be
-     *                   absolute (foo.zonename.com.)
+     * @param zoneName   - The zone that contains the RRSet.The trailing dot is optional.
+     * @param recordType - The type of the RRSet.This can be numeric (1) or if a well-known name is defined for the type
+     *                   (A), you can use it instead.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
      * @param ttl        - The updated TTL value for the RRSet.
-     * @param rdata      - The updated BIND data for the RRSet as a string. If there is
-     *                   a single resource record in the RRSet, you can pass in the
-     *                   single string or an array with a single element. If there are
-     *                   multiple resource records in this RRSet, pass in a list of
-     *                   strings.
+     * @param rdata      - The updated BIND data for the RRSet as a string. If there is a single resource record in the
+     *                   RRSet, you can pass in the single string or an array with a single element. If there are
+     *                   multiple resource records in this RRSet, pass in a list of strings.
      * @return - Status message
      * @throws IOException - {@link IOException}
      */
-    public String updateRRSet(String zoneName, String recordType,
-                              String ownerName, Integer ttl, List<String> rdata)
+    public String updateRRSet(String zoneName, String recordType, String ownerName, Integer ttl, List<String> rdata)
             throws IOException {
 
-        RRSet rrSet = new RRSet(zoneName, ownerName, recordType,
-                ttl, rdata);
+        RRSet rrSet = new RRSet(zoneName, ownerName, recordType, ttl, rdata, null);
 
-        String url = V1_ZONES + zoneName + RRSETS + recordType + "/"
-                + ownerName;
-        ClientData clientData = ultraRestClient.put(url,
-                JsonUtils.objectToJson(rrSet));
+        String url = ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
+        ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(rrSet));
         checkClientData(clientData);
         return clientData.getBody();
     }
@@ -307,19 +320,15 @@ public class RestApiClient {
     /**
      * Delete an RRSet.
      *
-     * @param zoneName   - The zone containing the RRSet to be deleted. The trailing
-     *                   dot is optional.
-     * @param recordType - The type of the RRSet.This can be numeric (1) or if a
-     *                   well-known name is defined for the type (A), you can use it
-     *                   instead.
-     * @param ownerName  - The owner name for the RRSet. If no trailing dot is
-     *                   supplied, the owner_name is assumed to be relative (foo). If a
-     *                   trailing dot is supplied, the owner name is assumed to be
-     *                   absolute (foo.zonename.com.)
+     * @param zoneName   - The zone containing the RRSet to be deleted. The trailing dot is optional.
+     * @param recordType - The type of the RRSet.This can be numeric (1) or if a well-known name is defined for the type
+     *                   (A), you can use it instead.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
      */
     public void deleteRRSet(String zoneName, String recordType, String ownerName) {
-        String url = V1_ZONES + zoneName + RRSETS + recordType + "/"
-                + ownerName;
+        String url = ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
         ClientData clientData = ultraRestClient.delete(url);
         checkClientData(clientData);
     }
@@ -331,11 +340,10 @@ public class RestApiClient {
      * @throws IOException - {@link IOException}
      */
     public AccountList getAccountDetails() throws IOException {
-        String url = V1_ACCOUNTS;
+        String url = ACCOUNTS;
         ClientData clientData = ultraRestClient.get(url);
         checkClientData(clientData);
-        return JsonUtils.jsonToObject(clientData.getBody(),
-                AccountList.class);
+        return JsonUtils.jsonToObject(clientData.getBody(), AccountList.class);
     }
 
     /**
@@ -344,7 +352,7 @@ public class RestApiClient {
      * @return - The version of REST API server
      */
     public Version getVersion() throws IOException {
-        ClientData clientData = ultraRestClient.get(V1_VERSION);
+        ClientData clientData = ultraRestClient.get(VERSION);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), Version.class);
     }
@@ -355,19 +363,19 @@ public class RestApiClient {
      * @return - The status of REST API server
      */
     public Status getStatus() throws IOException {
-        ClientData clientData = ultraRestClient.get(V1_STATUS);
+        ClientData clientData = ultraRestClient.get(STATUS);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), Status.class);
     }
 
-    private MultivaluedMap<String, String> buildQueryParams(String q,
-                                                            int offset, int limit, Enum sort, boolean reverse) {
+    private MultivaluedMap<String, String> buildQueryParams(String q, int offset, int limit, Enum sort,
+            boolean reverse) {
         MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
         if (!Strings.isNullOrEmpty(q)) {
             queryParams.add("q", q);
         }
-        queryParams.add("offset", Integer.toString(offset, 10));
-        queryParams.add("limit", Integer.toString(limit, 10));
+        queryParams.add("offset", Integer.toString(offset, BASE_10_RADIX));
+        queryParams.add("limit", Integer.toString(limit, BASE_10_RADIX));
         queryParams.add("sort", sort.toString());
         queryParams.add("reverse", Boolean.toString(reverse));
 

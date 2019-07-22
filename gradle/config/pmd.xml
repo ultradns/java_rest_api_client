@@ -10,30 +10,48 @@
   </description>
 
   <!-- We'll use the entire 'strings' ruleset -->
-  <rule ref="rulesets/basic.xml"/>
-  <rule ref="rulesets/strings.xml">
+  <rule ref="rulesets/java/basic.xml"/>
+  <rule ref="rulesets/java/strings.xml">
     <exclude name="AvoidDuplicateLiterals"/>
   </rule>
-  <rule ref="rulesets/codesize.xml">
+  <rule ref="rulesets/java/codesize.xml">
     <exclude name="TooManyMethods"/>
+    <exclude name="NcssMethodCount"/>
+    <exclude name="NcssTypeCount"/>
+    <exclude name="CyclomaticComplexity"/>
   </rule>
-  <rule ref="rulesets/design.xml">
+  <rule ref="rulesets/java/design.xml">
     <exclude name="ConfusingTernary"/>
   </rule>
 
-  <rule ref="rulesets/controversial.xml/DoNotCallGarbageCollectionExplicitly"/>
-  <rule ref="rulesets/optimizations.xml/AddEmptyString"/>
+  <rule ref="rulesets/java/controversial.xml/DoNotCallGarbageCollectionExplicitly"/>
+  <rule ref="rulesets/java/optimizations.xml/AddEmptyString"/>
 
   <!-- customize a rule's property value -->
-  <rule ref="rulesets/strings.xml/AvoidDuplicateLiterals">
+  <rule ref="rulesets/java/strings.xml/AvoidDuplicateLiterals">
     <properties>
         <property name="skipAnnotations" value="true"/>
     </properties>
   </rule>
-  <rule ref="rulesets/codesize.xml/TooManyMethods">
+  <rule ref="rulesets/java/codesize.xml/TooManyMethods">
     <properties>
         <property name="maxmethods" value="25"/>
     </properties>
   </rule>
+    <rule ref="rulesets/java/codesize.xml/NcssMethodCount">
+        <properties>
+            <property name="minimum" value="100"/>
+        </properties>
+    </rule>
+    <rule ref="rulesets/java/codesize.xml/NcssTypeCount">
+        <properties>
+            <property name="minimum" value="400"/>
+        </properties>
+    </rule>
+    <rule ref="rulesets/java/codesize.xml/CyclomaticComplexity">
+        <properties>
+            <property name="reportLevel" value="10"/>
+        </properties>
+    </rule>
 </ruleset>
 

@@ -7,12 +7,9 @@
  */
 // originally found at: https://github.com/gschmidl/jacoco-gradle with no license.
 
-
-import groovy.lang.Closure;
-
 apply plugin: 'java'
 
-def jacocoVersion = '0.6.0.+'
+def jacocoVersion = '0.7.5+'
 def jacocoAgent = "org.jacoco.agent-${jacocoVersion}.jar"
 
 configurations { jacoco } 
@@ -102,9 +99,6 @@ test {
         ant.file file: "${jacocoConvention.coverageFileName}"
       }
       structure(name: project.name) {
-        classfiles {
-          fileset dir: "${sourceSets.main.output.classesDir}"
-        }
         sourcefiles {
           sourceSets.main.java.srcDirs.each {
             fileset(dir: it.absolutePath)

@@ -12,30 +12,16 @@ import java.io.IOException;
 
 /**
  * OAuth 2.0 implementation of AddAuth.
- *
- * User provides the initial access token, refresh token, the auth URL, and an optional Callback.  Initial
- * access token acquisition is out of scope for this implementation.
+ * <p>
+ * User provides the initial access token, refresh token, the auth URL, and an optional Callback.  Initial access token
+ * acquisition is out of scope for this implementation.
  */
 public class OAuth implements AddAuth {
+    private static final String AUTHORIZATION = "Authorization";
     private final String authUrl;
+    private final Callback callback;
     private String accessToken;
     private String refreshToken;
-    private final Callback callback;
-
-    private static final String AUTHORIZATION = "Authorization";
-
-    /**
-     * Provides a way for higher-level code to get notification that the access token and refresh token have
-     * changed.  This allows code to, for example, store the changed values in a property file for later re-use.
-     */
-    public interface Callback {
-        /**
-         * Invoked by refreshAuth() whenever a new accessToken and refreshToken are returned by the auth server.
-         * @param accessToken The new access token
-         * @param refreshToken The new refresh token.
-         */
-        void tokensUpdated(String accessToken, String refreshToken);
-    }
 
     public OAuth(String accessToken, String refreshToken, String authUrl, Callback callback) {
         this.authUrl = authUrl;
@@ -69,8 +55,21 @@ public class OAuth implements AddAuth {
             }
             return true;
         } else {
-            throw new RuntimeException("Status: " + clientData.getStatus() +
-                    ", Description: " + clientData.getBody());
+            throw new RuntimeException("Status: " + clientData.getStatus() + ", Description: " + clientData.getBody());
         }
+    }
+
+    /**
+     * Provides a way for higher-level code to get notification that the access token and refresh token have changed.
+     * This allows code to, for example, store the changed values in a property file for later re-use.
+     */
+    public interface Callback {
+        /**
+         * Invoked by refreshAuth() whenever a new accessToken and refreshToken are returned by the auth server.
+         *
+         * @param accessToken  The new access token
+         * @param refreshToken The new refresh token.
+         */
+        void tokensUpdated(String accessToken, String refreshToken);
     }
 }

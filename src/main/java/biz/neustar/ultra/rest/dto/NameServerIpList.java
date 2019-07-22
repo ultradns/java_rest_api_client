@@ -1,48 +1,25 @@
 /**
- * Copyright 2000-2013 NeuStar, Inc. All rights reserved.
- * NeuStar, the Neustar logo and related names and logos are registered
- * trademarks, service marks or tradenames of NeuStar, Inc. All other
- * product names, company names, marks, logos and symbols may be trademarks
- * of their respective owners.
+ * Copyright 2000-2013 NeuStar, Inc. All rights reserved. NeuStar, the Neustar logo and related names and logos are
+ * registered trademarks, service marks or tradenames of NeuStar, Inc. All other product names, company names, marks,
+ * logos and symbols may be trademarks of their respective owners.
  */
 package biz.neustar.ultra.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
  * Namer Server IP list.
- * @author nupadhyay
  *
+ * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class NameServerIpList {
-    
-    
-    /**
-     * Empty constructor.
-     */
-    public NameServerIpList() {
-        super();
-    }
-    
-    /**
-     * Parameterized constructor.
-     * @param nameServerIp1 - Name Server IP 1
-     * @param nameServerIp2 - Name Server IP 2
-     * @param nameServerIp3 - Name Server IP 3
-     */
-    public NameServerIpList(NameServer nameServerIp1, NameServer nameServerIp2,
-                            NameServer nameServerIp3) {
-        super();
-        this.nameServerIp1 = nameServerIp1;
-        this.nameServerIp2 = nameServerIp2;
-        this.nameServerIp3 = nameServerIp3;
-    }
 
     /**
-     * Name server IP1. 
+     * Name server IP1.
      */
     private NameServer nameServerIp1;
     /**
@@ -53,49 +30,82 @@ public class NameServerIpList {
      * Name Server IP3.
      */
     private NameServer nameServerIp3;
+
+    /**
+     * Empty constructor.
+     */
+    public NameServerIpList() {
+        super();
+    }
+
+    /**
+     * Parameterized constructor.
+     *
+     * @param nameServerIp1 - Name Server IP 1
+     * @param nameServerIp2 - Name Server IP 2
+     * @param nameServerIp3 - Name Server IP 3
+     */
+    public NameServerIpList(NameServer nameServerIp1, NameServer nameServerIp2, NameServer nameServerIp3) {
+        super();
+        this.nameServerIp1 = nameServerIp1;
+        this.nameServerIp2 = nameServerIp2;
+        this.nameServerIp3 = nameServerIp3;
+    }
+
     /**
      * Get name server IP One.
+     *
      * @return the nameServerIp1
      */
     public final NameServer getNameServerIp1() {
         return nameServerIp1;
     }
+
     /**
      * Set name server IP one.
+     *
      * @param nameServerIp1 the nameServerIp1 to set
      */
     public final void setNameServerIp1(NameServer nameServerIp1) {
         this.nameServerIp1 = nameServerIp1;
     }
+
     /**
      * Get name server IP two.
+     *
      * @return the nameServerIp2
      */
     public final NameServer getNameServerIp2() {
         return nameServerIp2;
     }
+
     /**
      * Set name server IP two.
+     *
      * @param nameServerIp2 the nameServerIp2 to set
      */
     public final void setNameServerIp2(NameServer nameServerIp2) {
         this.nameServerIp2 = nameServerIp2;
     }
+
     /**
      * Get name server IP three.
+     *
      * @return the nameServerIp3
      */
     public final NameServer getNameServerIp3() {
         return nameServerIp3;
     }
+
     /**
      * Set name server IP three.
+     *
      * @param nameServerIp3 the nameServerIp3 to set
      */
     public final void setNameServerIp3(NameServer nameServerIp3) {
         this.nameServerIp3 = nameServerIp3;
     }
-    
+
     /*
      * (non-Javadoc)
      *
@@ -103,10 +113,11 @@ public class NameServerIpList {
      */
     @Override
     public final String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("nameServerIp1", getNameServerIp1())
                 .add("nameServerIp2", getNameServerIp2())
-                .add("nameServerIp3", getNameServerIp3()).toString();
+                .add("nameServerIp3", getNameServerIp3())
+                .toString();
     }
 
     /*
@@ -131,7 +142,7 @@ public class NameServerIpList {
             return false;
         }
         final NameServerIpList other = (NameServerIpList) obj;
-        isEqual =  Objects.equal(getNameServerIp1(), other.getNameServerIp1());
+        isEqual = Objects.equal(getNameServerIp1(), other.getNameServerIp1());
         return isEqual;
     }
 }
