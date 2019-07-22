@@ -28,6 +28,7 @@ import org.apache.commons.httpclient.HttpStatus;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -139,7 +140,7 @@ public class RestApiClient {
         SecondaryZoneInfo secondaryZoneInfo = new SecondaryZoneInfo(new PrimaryNameServers(nameServerIpList));
         secondaryZoneInfo.setNotificationEmailAddress(notificationEmailAddress);
         Zone zone = new Zone(null, null, secondaryZoneInfo, null);
-        String url = ZONES + zoneName;
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
         ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(zone));
         checkClientData(clientData);
         return clientData.getBody();
@@ -182,7 +183,8 @@ public class RestApiClient {
     public ZoneInfoList getZonesOfAccount(String accountName, String q, int offset, int limit,
             UltraRestSharedConstant.ZoneListSortType sort, boolean reverse) throws IOException {
         MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
-        String url = ACCOUNTS1 + accountName + "/zones";
+        String url = ACCOUNTS1 + URLEncoder.encode(accountName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue())
+                .replaceAll("\\+", "%20") + "/zones";
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), ZoneInfoList.class);
@@ -196,7 +198,7 @@ public class RestApiClient {
      * @throws IOException - {@link IOException}
      */
     public ZoneOutInfo getZoneMetadata(String zoneName) throws IOException {
-        String url = ZONES + zoneName;
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
         ClientData clientData = ultraRestClient.get(url);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), ZoneOutInfo.class);
@@ -207,8 +209,8 @@ public class RestApiClient {
      *
      * @param zoneName - The name of the zone
      */
-    public void deleteZone(String zoneName) {
-        String url = ZONES + zoneName;
+    public void deleteZone(String zoneName) throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
         ClientData clientData = ultraRestClient.delete(url);
         checkClientData(clientData);
         System.out.println(clientData.getStatus());
@@ -231,7 +233,7 @@ public class RestApiClient {
             UltraRestSharedConstant.RRListSortType sort, boolean reverse) throws IOException {
         MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
 
-        String url = ZONES + zoneName + "/rrsets";
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + "/rrsets";
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), RRSetList.class);
@@ -257,7 +259,8 @@ public class RestApiClient {
             UltraRestSharedConstant.RRListSortType sort, boolean reverse) throws IOException {
         MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
 
-        String url = ZONES + zoneName + RRSETS + recordType;
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + recordType;
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), RRSetList.class);
@@ -284,7 +287,8 @@ public class RestApiClient {
 
         RRSet rrSet = new RRSet(zoneName, ownerName, recordType, ttl, rdata, null);
 
-        String url = ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + recordType + "/" + ownerName;
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(rrSet));
         checkClientData(clientData);
         return clientData.getBody();
@@ -311,7 +315,8 @@ public class RestApiClient {
 
         RRSet rrSet = new RRSet(zoneName, ownerName, recordType, ttl, rdata, null);
 
-        String url = ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + recordType + "/" + ownerName;
         ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(rrSet));
         checkClientData(clientData);
         return clientData.getBody();
@@ -327,8 +332,9 @@ public class RestApiClient {
      *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
      *                   (foo.zonename.com.)
      */
-    public void deleteRRSet(String zoneName, String recordType, String ownerName) {
-        String url = ZONES + zoneName + RRSETS + recordType + "/" + ownerName;
+    public void deleteRRSet(String zoneName, String recordType, String ownerName) throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + recordType + "/" + ownerName;
         ClientData clientData = ultraRestClient.delete(url);
         checkClientData(clientData);
     }
