@@ -14,6 +14,8 @@ import biz.neustar.ultra.rest.dto.RRSetList;
 import biz.neustar.ultra.rest.dto.Status;
 import biz.neustar.ultra.rest.dto.TaskStatusInfo;
 import biz.neustar.ultra.rest.dto.Version;
+import biz.neustar.ultra.rest.dto.WebForward;
+import biz.neustar.ultra.rest.dto.WebForwardList;
 import biz.neustar.ultra.rest.dto.ZoneInfoList;
 import biz.neustar.ultra.rest.dto.ZoneOutInfo;
 import org.junit.Assert;
@@ -189,5 +191,63 @@ public class RestApiClientTest {
         assertTrue(String.format("For task Id '%s', expected status is '%s, but got '%s'.", taskId,
                 TaskStatusCode.COMPLETE.name(), taskStatus),
                 TaskStatusCode.COMPLETE.name().equalsIgnoreCase(taskStatus));
+    }
+
+    @Test
+    public void testBasicWebForwardOperations() throws IOException {
+        String zoneName = System.currentTimeMillis() + "foo.invalid.";
+
+        // Create a primary zone for testing
+        AccountList accountList = REST_API_CLIENT.getAccountDetails();
+        assertNotNull(accountList);
+        String accountName = accountList.getAccounts().get(0).getAccountName();
+        assertNotNull(accountName);
+        LOG.debug("accountName = " + accountName);
+
+        String result = REST_API_CLIENT.createPrimaryZone(accountName, zoneName);
+        assertNotNull(result);
+        LOG.debug("result = " + result);
+
+        // Create a web forward under the zone from foo.zone -> bar.invalid
+        WebForward webForward = new WebForward();
+        String requestTo = "foo." + zoneName + "/*";
+        webForward.setRequestTo(requestTo);
+        webForward.setDefaultRedirectTo("https://bar.invalid");
+        webForward.setDefaultForwardType(WebForward.RedirectType.HTTP_301_REDIRECT);
+        webForward.setRelativeForwardType(WebForward.RelativeForward.PARAMETER_AND_PATH);
+        WebForward returnedWebForward = REST_API_CLIENT.createWebForward(zoneName, webForward);
+        assertNotNull(returnedWebForward);
+        assertNotNull(returnedWebForward.getGuid());
+
+        // Get the list of web forwards
+        WebForwardList returnedWebForwardList = REST_API_CLIENT.getWebForwardList(zoneName, "name:foo", 0,
+                MAX_PAGE_SIZE, UltraRestSharedConstant.WFListSortFields.REQUEST_TO, false);
+        assertNotNull(returnedWebForwardList);
+        assertNotNull(returnedWebForwardList.getWebForwards());
+        assertEquals(1, returnedWebForwardList.getWebForwards().size());
+
+        // Update a web forward redirect url from bar.zone -> new-bar.zone
+        String guid = returnedWebForwardList.getWebForwards().get(0).getGuid();
+        String newRedirect = "https://new-bar.invalid";
+        webForward = new WebForward();
+        webForward.setRequestTo(requestTo);
+        webForward.setDefaultRedirectTo(newRedirect);
+        webForward.setDefaultForwardType(WebForward.RedirectType.HTTP_301_REDIRECT);
+        webForward.setRelativeForwardType(WebForward.RelativeForward.PARAMETER_AND_PATH);
+        String status = REST_API_CLIENT.updateWebForward(zoneName, guid, webForward);
+        assertNotNull(status);
+
+        // Confirm that the web forward was updated successfully
+        returnedWebForwardList = REST_API_CLIENT.getWebForwardList(zoneName, "name:new-bar", 0, MAX_PAGE_SIZE,
+                UltraRestSharedConstant.WFListSortFields.REQUEST_TO, false);
+        assertNotNull(returnedWebForwardList);
+        assertNotNull(returnedWebForwardList.getWebForwards());
+        assertEquals(1, returnedWebForwardList.getWebForwards().size());
+
+        // Delete the web forward
+        REST_API_CLIENT.deleteWebForward(zoneName, returnedWebForwardList.getWebForwards().get(0).getGuid());
+
+        // Delete the test zone
+        REST_API_CLIENT.deleteZone(zoneName);
     }
 }

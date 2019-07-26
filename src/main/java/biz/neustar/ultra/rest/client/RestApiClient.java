@@ -14,6 +14,8 @@ import biz.neustar.ultra.rest.dto.SecondaryZoneInfo;
 import biz.neustar.ultra.rest.dto.Status;
 import biz.neustar.ultra.rest.dto.TaskStatusInfo;
 import biz.neustar.ultra.rest.dto.Version;
+import biz.neustar.ultra.rest.dto.WebForward;
+import biz.neustar.ultra.rest.dto.WebForwardList;
 import biz.neustar.ultra.rest.dto.Zone;
 import biz.neustar.ultra.rest.dto.ZoneInfoList;
 import biz.neustar.ultra.rest.dto.ZoneOutInfo;
@@ -26,6 +28,7 @@ import com.google.common.base.Strings;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.commons.httpclient.HttpStatus;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -46,6 +49,9 @@ public class RestApiClient {
     private static final String RRSETS = "/rrsets/";
     private static final String AUTHORIZATION_TOKEN = "/authorization/token";
     private static final String TASK = "/tasks/";
+    private static final String WEB_FORWARDS = "/webforwards";
+    private static final String DNSSEC = "/dnssec";
+
     private static final int BASE_10_RADIX = 10;
 
 
@@ -386,5 +392,91 @@ public class RestApiClient {
         queryParams.add("reverse", Boolean.toString(reverse));
 
         return queryParams;
+    }
+
+    /**
+     * Create a web forward.
+     *
+     * @param zoneName   - The name of the zone. The trailing . is optional.
+     * @param webForward - The {@link WebForward} details.
+     * @return - The created {@link WebForward}
+     * @throws IOException - {@link IOException}
+     */
+    public WebForward createWebForward(@NotNull final String zoneName, @NotNull WebForward webForward)
+            throws IOException {
+        String url =
+                ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + WEB_FORWARDS;
+        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(webForward));
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), WebForward.class);
+    }
+
+    /**
+     * Get the list of web forwards.
+     *
+     * @param zoneName   - The name of the zone. The trailing . is optional.
+     * @param q          - The search parameters. Valid keys are:
+     *                      type - Valid values include:
+     *                          o Framed
+     *                          o HTTP_301_REDIRECT
+     *                          o HTTP_302_REDIRECT
+     *                          o HTTP_303_REDIRECT
+     *                          o HTTP_307_REDIRECT
+     *                          o Advanced
+     *                       advanced - Valid values include true and false.
+     *                       name – any string, will map to anything in either the host or the target.
+     * @param offset     - The position in the list for the first returned element(0 based)
+     * @param limit      - The maximum number of rows to be returned.
+     * @param sort       - The sort column used to order the list. Valid values for the sort field are:
+     *                      REQUEST_TO (this is the default)
+     *                      REDIRECT_TO
+     *                      TYPE
+     *                      DOMAIN
+     *                      ADVANCED
+     * @param reverse    - Whether the list is ascending(false) or descending(true). Defaults to true
+     * @throws IOException - {@link IOException}
+     */
+    public WebForwardList getWebForwardList(@NotNull final String zoneName, String q, int offset, int limit,
+            UltraRestSharedConstant.WFListSortFields sort, boolean reverse) throws IOException {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
+        String url =
+                ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + WEB_FORWARDS;
+        ClientData clientData = ultraRestClient.get(url, queryParams);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), WebForwardList.class);
+    }
+
+    /**
+     * Update a web forward.
+     *
+     * @param zoneName   - The name of the zone. The trailing . is optional.
+     * @param guid       - The System-generated unique identifier for this object.
+     * @param webForward - The {@link WebForward} details.
+     * @return - The created {@link WebForward}
+     * @throws IOException - {@link IOException}
+     */
+    public String updateWebForward(@NotNull final String zoneName, @NotNull String guid, @NotNull WebForward webForward)
+            throws IOException {
+        String url =
+                ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + WEB_FORWARDS
+                        + "/" + guid;
+        ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(webForward));
+        checkClientData(clientData);
+        return clientData.getBody();
+    }
+
+    /**
+     * Delete a web forward.
+     *
+     * @param zoneName - The name of the zone. The trailing . is optional.
+     * @param guid     - The System-generated unique identifier for this object.
+     * @throws IOException - {@link IOException}
+     */
+    public void deleteWebForward(@NotNull final String zoneName, @NotNull String guid) throws IOException {
+        String url =
+                ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + WEB_FORWARDS
+                        + "/" + guid;
+        ClientData clientData = ultraRestClient.delete(url);
+        checkClientData(clientData);
     }
 }
