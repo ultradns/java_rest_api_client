@@ -1,6 +1,8 @@
 package biz.neustar.ultra.rest.client.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -30,10 +32,15 @@ public final class JsonUtils {
     /**
      * Json object mapper.
      */
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER;
 
     private JsonUtils() {
         //does nothing, makes class a singleton
+    }
+
+    static {
+        MAPPER = new ObjectMapper();
+        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     /**
@@ -97,6 +104,18 @@ public final class JsonUtils {
     public static <T> Map<String, T> jsonToMap(String json, Class<T> clazz) throws IOException {
         TypeReference typeReference = new CollectionTypeReference<>(Map.class, String.class, clazz);
         return MAPPER.readValue(json, typeReference);
+    }
+
+    public static JsonNode readTree(String json) throws IOException {
+        return MAPPER.readTree(json);
+    }
+
+    public static <T> T  convertValue(JsonNode jsonNode, final Class<T> valueType) {
+        return MAPPER.convertValue(jsonNode, valueType);
+    }
+
+    public static <T> T  convertValue(JsonNode jsonNode, TypeReference typeReference) {
+        return MAPPER.convertValue(jsonNode, typeReference);
     }
 
     private static final class CollectionTypeReference<T> extends TypeReference<Collection<T>> {

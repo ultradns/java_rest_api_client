@@ -1,5 +1,6 @@
 package biz.neustar.ultra.rest.main;
 
+import biz.neustar.ultra.rest.client.exception.UltraClientErrors;
 import biz.neustar.ultra.rest.client.util.JsonUtils;
 import biz.neustar.ultra.rest.dto.TokenResponse;
 import biz.neustar.ultra.rest.main.auth.AddAuth;
@@ -55,7 +56,7 @@ public final class UltraRestClientFactory {
         ClientData clientData = firstClient.post(authUrl, formData);
         // Use the returned token to setup an oauth client
         if (HttpStatus.SC_OK != clientData.getStatus()) {
-            throw new RuntimeException("Status: " + clientData.getStatus() + ", Description: " + clientData.getBody());
+            return UltraClientErrors.throwUltraClientException(clientData, UltraRestClient.class);
         }
         try {
             TokenResponse tokenResponse = JsonUtils.jsonToObject(clientData.getBody(), TokenResponse.class);
@@ -66,7 +67,7 @@ public final class UltraRestClientFactory {
             }
             return createRestClientOAuthTokensCallback(baseUrl, accessToken, refreshToken, authUrl, callback);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return UltraClientErrors.castToUltraClientException(e, UltraRestClient.class);
         }
     }
 

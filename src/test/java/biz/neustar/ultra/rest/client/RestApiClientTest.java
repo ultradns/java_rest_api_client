@@ -5,7 +5,9 @@
  */
 package biz.neustar.ultra.rest.client;
 
+import biz.neustar.ultra.rest.client.exception.UltraClientException;
 import biz.neustar.ultra.rest.constants.TaskStatusCode;
+import biz.neustar.ultra.rest.constants.UltraRestErrorConstant;
 import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.dto.AccountList;
 import biz.neustar.ultra.rest.dto.NameServer;
@@ -29,6 +31,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -114,8 +117,12 @@ public class RestApiClientTest {
             REST_API_CLIENT.getRRSetsByType(firstZoneName, "A", null, 0, MAX_PAGE_SIZE,
                     UltraRestSharedConstant.RRListSortType.OWNER, false);
             fail("Expecting an exception");
-        } catch (RuntimeException e) {
-            assertTrue(e.getMessage().contains("Status: 404"));
+        } catch (UltraClientException e) {
+            assertEquals(404, e.getStatus());
+            assertFalse(e.getErrors().isEmpty());
+            assertEquals(1, e.getErrors().size());
+            assertEquals(UltraRestErrorConstant.DATA_NOT_FOUND.getErrorCode(), e.getErrors().get(0).getErrorCode());
+            assertEquals(UltraRestErrorConstant.DATA_NOT_FOUND.getErrorMessage(), e.getErrors().get(0).getErrorMessage());
         }
 
         REST_API_CLIENT.deleteZone(zoneName);

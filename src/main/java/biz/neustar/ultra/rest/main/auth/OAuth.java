@@ -1,5 +1,6 @@
 package biz.neustar.ultra.rest.main.auth;
 
+import biz.neustar.ultra.rest.client.exception.UltraClientErrors;
 import biz.neustar.ultra.rest.client.util.JsonUtils;
 import biz.neustar.ultra.rest.dto.TokenResponse;
 import biz.neustar.ultra.rest.main.ClientData;
@@ -51,11 +52,11 @@ public class OAuth implements AddAuth {
                     callback.tokensUpdated(accessToken, refreshToken);
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                return UltraClientErrors.castToUltraClientException(e, Boolean.class);
             }
             return true;
         } else {
-            throw new RuntimeException("Status: " + clientData.getStatus() + ", Description: " + clientData.getBody());
+            return UltraClientErrors.throwUltraClientException(clientData, Boolean.class);
         }
     }
 
