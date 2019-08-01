@@ -4,44 +4,70 @@ package biz.neustar.ultra.rest.client.exception; /**
  * logos and symbols may be trademarks of their respective owners.
  */
 
+import biz.neustar.ultra.rest.dto.UltraError;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UltraClientException extends Exception {
+import java.util.List;
+
+public class UltraClientException extends RuntimeException {
 
     private static final long serialVersionUID = -2299674268656112544L;
     private static final Logger LOGGER = LoggerFactory.getLogger(UltraClientException.class);
-    private final String message;
+
+    private final int status;
+    private final List<UltraError> errors;
+
     private Throwable throwable;
 
-    public UltraClientException(String message, Throwable e) {
-        super();
-        this.message = message;
-        this.throwable = e;
+    public UltraClientException(int status, List<UltraError> errors) {
+        this.status = status;
+        this.errors = errors;
     }
 
-    public UltraClientException(String message) {
-        super();
-        this.message = message;
+    public UltraClientException(int status, List<UltraError> errors, Throwable throwable) {
+        this.status = status;
+        this.errors = errors;
+        this.throwable = throwable;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Throwable#getMessage()
-     */
+    public List<UltraError> getErrors() {
+        return errors;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public Throwable getThrowable() {
+        return throwable;
+    }
+
     @Override
-    public String getMessage() {
-        return message;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        UltraClientException that = (UltraClientException) o;
+        return status == that.status && Objects.equal(errors, that.errors) && Objects.equal(throwable, that.throwable);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(errors, status, throwable);
+    }
+
     @Override
     public String toString() {
-        LOGGER.debug("Exception: " + throwable.getMessage());
-        return "UltraClientException [message=" + message + "] \n";
+        return MoreObjects.toStringHelper(this)
+                .add("errors", errors)
+                .add("status", status)
+                .add("throwable", throwable)
+                .toString();
     }
-
 }

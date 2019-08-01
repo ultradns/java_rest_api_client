@@ -26,13 +26,14 @@ import biz.neustar.ultra.rest.main.UltraRestClientFactory;
 import biz.neustar.ultra.rest.main.auth.OAuth;
 import com.google.common.base.Strings;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import org.apache.commons.httpclient.HttpStatus;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
+
+import static biz.neustar.ultra.rest.client.exception.UltraClientErrors.checkClientData;
 
 /**
  * Copyright 2012-2013 NeuStar, Inc. All rights reserved. NeuStar, the Neustar logo and related names and logos are
@@ -164,12 +165,6 @@ public class RestApiClient {
         ClientData clientData = ultraRestClient.get(url);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), TaskStatusInfo.class);
-    }
-
-    private void checkClientData(ClientData clientData) {
-        if (clientData.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
-            throw new RuntimeException("Status: " + clientData.getStatus() + ", Description: " + clientData.getBody());
-        }
     }
 
     /**
