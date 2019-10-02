@@ -4,6 +4,8 @@ import biz.neustar.ultra.rest.client.util.JsonUtils;
 import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.constants.ZoneType;
 import biz.neustar.ultra.rest.dto.AccountList;
+import biz.neustar.ultra.rest.dto.BatchRequest;
+import biz.neustar.ultra.rest.dto.BatchResponse;
 import biz.neustar.ultra.rest.dto.CreateType;
 import biz.neustar.ultra.rest.dto.NameServerIpList;
 import biz.neustar.ultra.rest.dto.PrimaryNameServers;
@@ -13,6 +15,7 @@ import biz.neustar.ultra.rest.dto.RRSetList;
 import biz.neustar.ultra.rest.dto.SecondaryZoneInfo;
 import biz.neustar.ultra.rest.dto.Status;
 import biz.neustar.ultra.rest.dto.TaskStatusInfo;
+import biz.neustar.ultra.rest.dto.TokenResponse;
 import biz.neustar.ultra.rest.dto.Version;
 import biz.neustar.ultra.rest.dto.WebForward;
 import biz.neustar.ultra.rest.dto.WebForwardList;
@@ -32,6 +35,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Optional;
 
 import static biz.neustar.ultra.rest.client.exception.UltraClientErrors.checkClientData;
 
@@ -52,9 +56,11 @@ public class RestApiClient {
     private static final String TASK = "/tasks/";
     private static final String WEB_FORWARDS = "/webforwards";
     private static final String DNSSEC = "/dnssec";
+    private static final String BATCH = "batch";
+    private static final String SUB_ACCOUNTS = "subaccounts/";
+    private static final String TOKEN = "/token";
 
     private static final int BASE_10_RADIX = 10;
-
 
     private final UltraRestClient ultraRestClient;
 
@@ -381,10 +387,10 @@ public class RestApiClient {
         if (!Strings.isNullOrEmpty(q)) {
             queryParams.add("q", q);
         }
-        queryParams.add("offset", Integer.toString(offset, BASE_10_RADIX));
-        queryParams.add("limit", Integer.toString(limit, BASE_10_RADIX));
-        queryParams.add("sort", sort.toString());
-        queryParams.add("reverse", Boolean.toString(reverse));
+        Optional.ofNullable(offset).ifPresent(o -> queryParams.add("offset", Integer.toString(o, BASE_10_RADIX)));
+        Optional.ofNullable(limit).ifPresent(l -> queryParams.add("limit", Integer.toString(l, BASE_10_RADIX)));
+        Optional.ofNullable(sort).ifPresent(s -> queryParams.add("sort", sort.toString()));
+        Optional.ofNullable(reverse).ifPresent(r -> queryParams.add("reverse", Boolean.toString(reverse)));
 
         return queryParams;
     }
@@ -473,5 +479,81 @@ public class RestApiClient {
                         + "/" + guid;
         ClientData clientData = ultraRestClient.delete(url);
         checkClientData(clientData);
+    }
+
+    /**
+     * Perform a Batch operation.
+     *
+     * @param batchRequests - The list of batch requests. Make sure the URIs are properly encoded as per Ultra REST API
+     *                      standards, for example the spaces are replaced with '%20' etc.
+     * @return - The {@link BatchResponse} list
+     */
+    public List<BatchResponse> batchOperation(@NotNull List<BatchRequest> batchRequests) throws IOException {
+        String url = BATCH;
+        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(batchRequests));
+        checkClientData(clientData);
+        return JsonUtils.jsonToList(clientData.getBody(), BatchResponse.class);
+    }
+
+    /**
+     * Build the {@link RestApiClient} for a Reseller's sub-account.
+     *
+     * @param subAccountName - The sub-account name to access.
+     * @return - The {@link RestApiClient} to access the sub-account resources.
+     */
+    public RestApiClient buildRestApiClientForSubAccountAccess(@NotNull String subAccountName) throws IOException {
+        String url = SUB_ACCOUNTS + URLEncoder.encode(subAccountName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue())
+                .replaceAll("\\+", "%20") + TOKEN;
+        ClientData clientData = ultraRestClient.post(url);
+        checkClientData(clientData);
+        TokenResponse subAccountTokenResponse = JsonUtils.jsonToObject(clientData.getBody(), TokenResponse.class);
+        return buildRestApiClientWithTokens(subAccountTokenResponse.getAccessToken(), null,
+                this.ultraRestClient.getBaseUrl(), null);
+    }
+
+    /**
+     * List zones of Reseller's sub-accounts.
+     *
+     * @param q           - The search parameters, in a hash. Valid keys are:
+     *                      o account_name – will only return results that match the provided sub account accountName.
+     *                        For account names that include spaces in them, replace the space with “%20”.
+     *                      o match - Valid values for match include: o name o zone_type o zone_status
+     *                            o dnssec_status o Account_name (only sub account names)
+     * @param offset      - The position in the list for the first returned element(0 based)
+     * @param limit       - The maximum number of zones to be returned
+     * @param sort        - The sort column used to order the list. Valid values for the sort field are:
+     *                      NAME/ACCOUNT_NAME/ZONE_TYPE
+     * @param reverse     - Whether the list is ascending(false) or descending(true). Defaults to true
+     * @return - {@link ZoneInfoList}
+     * @throws IOException - {@link IOException}
+     */
+    public ZoneInfoList listSubAccountsZones(String q, int offset, int limit,
+            UltraRestSharedConstant.ZoneListSortType sort, boolean reverse) throws IOException {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
+        String url = SUB_ACCOUNTS + "/zones";
+        ClientData clientData = ultraRestClient.get(url, queryParams);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), ZoneInfoList.class);
+    }
+
+    /**
+     * List the basic information of Reseller's sub-accounts.
+     *
+     * @param q           - The search parameters, in a hash. Valid keys are:
+     *                      o account_name – will only return results that match the provided accountName. For account
+     *                       names that include spaces in them, replace the space with “%20”.
+     *                      o match - Valid values for match include: o ANYWHERE o EXACT o START o END
+     * @param offset      - The position in the list for the first returned element(0 based)
+     * @param limit       - The maximum number of zones to be returned
+     * @param reverse     - Whether the list is ascending(false) or descending(true). Defaults to true
+     * @return - {@link AccountList}
+     * @throws IOException - {@link IOException}
+     */
+    public AccountList listSubAccounts(String q, int offset, int limit, boolean reverse) throws IOException {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, null, reverse);
+        String url = SUB_ACCOUNTS;
+        ClientData clientData = ultraRestClient.get(url, queryParams);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), AccountList.class);
     }
 }
