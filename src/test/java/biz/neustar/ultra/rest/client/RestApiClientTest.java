@@ -10,8 +10,11 @@ import biz.neustar.ultra.rest.constants.TaskStatusCode;
 import biz.neustar.ultra.rest.constants.UltraRestErrorConstant;
 import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.dto.AccountList;
+import biz.neustar.ultra.rest.dto.BatchRequest;
+import biz.neustar.ultra.rest.dto.BatchResponse;
 import biz.neustar.ultra.rest.dto.NameServer;
 import biz.neustar.ultra.rest.dto.NameServerIpList;
+import biz.neustar.ultra.rest.dto.RRSet;
 import biz.neustar.ultra.rest.dto.RRSetList;
 import biz.neustar.ultra.rest.dto.Status;
 import biz.neustar.ultra.rest.dto.TaskStatusInfo;
@@ -20,6 +23,8 @@ import biz.neustar.ultra.rest.dto.WebForward;
 import biz.neustar.ultra.rest.dto.WebForwardList;
 import biz.neustar.ultra.rest.dto.ZoneInfoList;
 import biz.neustar.ultra.rest.dto.ZoneOutInfo;
+import com.google.common.collect.Lists;
+import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -27,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -256,5 +262,99 @@ public class RestApiClientTest {
 
         // Delete the test zone
         REST_API_CLIENT.deleteZone(zoneName);
+    }
+
+    @Test
+    public void testAddARecordsInBatch() throws IOException {
+        String zoneName = System.currentTimeMillis() + "foo.invalid.";
+
+        // Test data setup - get the user account
+        AccountList accountList = REST_API_CLIENT.getAccountDetails();
+        assertNotNull(accountList);
+        String accountName = accountList.getAccounts().get(0).getAccountName();
+        assertNotNull(accountName);
+        LOG.debug("accountName = " + accountName);
+
+        // Test data setup - create a test zone
+        String result = REST_API_CLIENT.createPrimaryZone(accountName, zoneName);
+        assertNotNull(result);
+        LOG.debug("result = " + result);
+
+        // Add multiple A records in a Batch
+        List<BatchRequest> batchRequests = Lists.newArrayList(
+                new BatchRequest(BatchRequest.Method.POST, "/v2/zones/" + zoneName + "/rrsets/A/a",
+                        new RRSet(null, null, null, 86400, Lists.newArrayList("1.1.1.1"), null)),
+                new BatchRequest(BatchRequest.Method.POST, "/v2/zones/" + zoneName + "/rrsets/A/b",
+                        new RRSet(null, null, null, 86400, Lists.newArrayList("2.2.2.2"), null)),
+                new BatchRequest(BatchRequest.Method.POST, "/v2/zones/" + zoneName + "/rrsets/A/c",
+                        new RRSet(null, null, null, 86400, Lists.newArrayList("3.3.3.3"), null)));
+
+        List<BatchResponse> batchResponses = REST_API_CLIENT.batchOperation(batchRequests);
+        assertNotNull(batchResponses);
+        assertEquals(3, batchResponses.size());
+        assertEquals(HttpStatus.SC_CREATED, batchResponses.get(0).getStatus());
+        assertEquals(HttpStatus.SC_CREATED, batchResponses.get(1).getStatus());
+        assertEquals(HttpStatus.SC_CREATED, batchResponses.get(2).getStatus());
+
+        RRSetList rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:a." + zoneName, 0, MAX_PAGE_SIZE,
+                UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertEquals(1, rrsets.getResultInfo().getReturnedCount());
+
+        rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:b." + zoneName, 0, MAX_PAGE_SIZE,
+                UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertEquals(1, rrsets.getResultInfo().getReturnedCount());
+
+        rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:c." + zoneName, 0, MAX_PAGE_SIZE,
+                UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertEquals(1, rrsets.getResultInfo().getReturnedCount());
+
+        // Delete the test zone
+        REST_API_CLIENT.deleteZone(zoneName);
+    }
+
+    @Test
+    public void testBasicResellerOperations() throws IOException {
+        String zoneName = System.currentTimeMillis() + "foo.invalid.";
+
+        // Get the list of sub-accounts
+        AccountList subAccountList = REST_API_CLIENT.listSubAccounts(null, 0, 100, false);
+        assertNotNull(subAccountList);
+        String subAccountName = subAccountList.getAccounts().get(0).getAccountName();
+        assertNotNull(subAccountName);
+        LOG.debug("accountName = " + subAccountName);
+
+        // Get the RestApiClient to access a sub-account resources.
+        LOG.debug("Getting the RestApiClient to access the resournces of sub-account:  " + subAccountName);
+        RestApiClient subAccountRestApiClient = REST_API_CLIENT.buildRestApiClientForSubAccountAccess(subAccountName);
+        assertNotNull(subAccountRestApiClient);
+
+        // Create a zone in the sub-account using sub-Account RestApiClient
+        String result = subAccountRestApiClient.createPrimaryZone(subAccountName, zoneName);
+        assertNotNull(result);
+        LOG.debug("result = " + result);
+
+        // Verify that the zone in the sub-account is created
+        ZoneOutInfo zone = subAccountRestApiClient.getZoneMetadata(zoneName);
+        assertNotNull(zone);
+        LOG.debug("zone = " + zone);
+
+        // List the Reseller's sub-accounts zones. Make sure to use Reseller's RestApiClient
+        ZoneInfoList allZones = REST_API_CLIENT.listSubAccountsZones("name:" + zoneName, 0, 5,
+                UltraRestSharedConstant.ZoneListSortType.NAME, true);
+        assertNotNull(allZones);
+        String firstZoneName = allZones.getZones().get(0).getProperties().getName();
+        LOG.debug("firstZoneName = " + firstZoneName);
+
+        // Reseller's RestApiClient cannot access sub-account's zone directly
+        try {
+            REST_API_CLIENT.getRRSets(firstZoneName, null, 0, MAX_PAGE_SIZE,
+                    UltraRestSharedConstant.RRListSortType.OWNER, false);
+            fail("Expecting an exception");
+        } catch (UltraClientException e) {
+            assertEquals(HttpStatus.SC_FORBIDDEN, e.getStatus());
+        }
+
+        // Delete the sub-account zone created
+        subAccountRestApiClient.deleteZone(zoneName);
     }
 }

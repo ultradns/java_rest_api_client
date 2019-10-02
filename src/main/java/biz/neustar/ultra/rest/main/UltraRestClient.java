@@ -69,6 +69,10 @@ public final class UltraRestClient {
         this.addAuth = addAuth;
     }
 
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
     private ClientResponse method(String method, WebResource.Builder builder) {
         return method(method, builder, true);
     }
