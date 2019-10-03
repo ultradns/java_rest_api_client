@@ -26,6 +26,7 @@ import biz.neustar.ultra.rest.dto.ZoneOutInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -314,6 +315,7 @@ public class RestApiClientTest {
 
     @Test
     public void testBasicResellerOperations() throws IOException {
+        Assume.assumeTrue("true".equalsIgnoreCase(System.getProperty("test.reseller")));
         String zoneName = System.currentTimeMillis() + "foo.invalid.";
 
         // Get the list of sub-accounts
