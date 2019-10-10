@@ -314,6 +314,54 @@ public class RestApiClientTest {
     }
 
     @Test
+    public void testAddARecordsInBatchAsync() throws IOException, InterruptedException {
+        String zoneName = System.currentTimeMillis() + "foo.invalid.";
+
+        // Test data setup - get the user account
+        AccountList accountList = REST_API_CLIENT.getAccountDetails();
+        assertNotNull(accountList);
+        String accountName = accountList.getAccounts().get(0).getAccountName();
+        assertNotNull(accountName);
+        LOG.debug("accountName = " + accountName);
+
+        // Test data setup - create a test zone
+        String result = REST_API_CLIENT.createPrimaryZone(accountName, zoneName);
+        assertNotNull(result);
+        LOG.debug("result = " + result);
+
+        // Add multiple A records in a Batch
+        List<BatchRequest> batchRequests = Lists.newArrayList(
+                new BatchRequest(BatchRequest.Method.POST, "/v2/zones/" + zoneName + "/rrsets/A/a",
+                        new RRSet(null, null, null, 86400, Lists.newArrayList("1.1.1.1"), null)),
+                new BatchRequest(BatchRequest.Method.POST, "/v2/zones/" + zoneName + "/rrsets/A/b",
+                        new RRSet(null, null, null, 86400, Lists.newArrayList("2.2.2.2"), null)),
+                new BatchRequest(BatchRequest.Method.POST, "/v2/zones/" + zoneName + "/rrsets/A/c",
+                        new RRSet(null, null, null, 86400, Lists.newArrayList("3.3.3.3"), null)));
+
+        String taskId = REST_API_CLIENT.asyncBatchOperation(batchRequests);
+        assertNotNull(taskId);
+
+        // Check the secondary zone creation task is finished successfully
+        checkTaskCompletedSuccessfully(10, 10, taskId);
+
+        // Verify that the records were created successfully
+        RRSetList rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:a." + zoneName, 0, MAX_PAGE_SIZE,
+                UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertEquals(1, rrsets.getResultInfo().getReturnedCount());
+
+        rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:b." + zoneName, 0, MAX_PAGE_SIZE,
+                UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertEquals(1, rrsets.getResultInfo().getReturnedCount());
+
+        rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:c." + zoneName, 0, MAX_PAGE_SIZE,
+                UltraRestSharedConstant.RRListSortType.OWNER, false);
+        assertEquals(1, rrsets.getResultInfo().getReturnedCount());
+
+        // Delete the test zone
+        REST_API_CLIENT.deleteZone(zoneName);
+    }
+
+    @Test
     public void testBasicResellerOperations() throws IOException {
         Assume.assumeTrue("true".equalsIgnoreCase(System.getProperty("test.reseller")));
         String zoneName = System.currentTimeMillis() + "foo.invalid.";
