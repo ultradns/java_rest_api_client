@@ -20,6 +20,7 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.representation.Form;
 import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import org.apache.http.HttpStatus;
@@ -150,8 +151,20 @@ public final class UltraRestClient {
      * @return - Return response in JSON string format.
      */
     public ClientData post(String url, String jsonString) {
+        return post(url, null, jsonString);
+    }
+
+    /**
+     * To execute post operation.
+     *
+     * @param url        - Resource URL
+     * @param jsonString - Object in JSON string format.
+     * @return - Return response in JSON string format.
+     */
+    public ClientData post(String url, MultivaluedMap<String, String> queryParams, String jsonString) {
         LOGGER.debug("Executing POST request for " + baseUrl + url);
-        return toClientData(method(POST, getBuilder(getWebResource(fixUrl(url))).entity(jsonString)));
+        return toClientData(method(POST, getBuilder(getWebResource(fixUrl(url)).queryParams(
+                Optional.ofNullable(queryParams).orElse(new MultivaluedMapImpl()))).entity(jsonString)));
     }
 
     /**
