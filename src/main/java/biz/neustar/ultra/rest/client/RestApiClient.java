@@ -458,9 +458,25 @@ public class RestApiClient {
                               UltraRestSharedConstant.ProbeType type, UltraRestSharedConstant.ProbeInterval interval,
                               List<String> agents, int threshold, Map<String, Object> details)
             throws IOException {
+        ProbeInfo probeInfo = new ProbeInfo(guid, null, type, interval, agents, threshold, details);
+        return updateProbe(zoneName, ownerName, probeInfo);
+    }
+
+    /**
+     * Updates a probe with provided ID in the specified zone and owner.
+     *
+     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param probeInfo - The probe.
+     * @return           - Status message
+     * @throws IOException - {@link IOException}
+     */
+    public String updateProbe(String zoneName, String ownerName, ProbeInfo probeInfo)
+            throws IOException {
         String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
                 + TYPEA + "/" + ownerName + PROBES;
-        ProbeInfo probeInfo = new ProbeInfo(guid, null, type, interval, agents, threshold, details);
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(probeInfo));
         checkClientData(clientData);
         return clientData.getBody();
@@ -502,9 +518,80 @@ public class RestApiClient {
             throws IOException {
         String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
                 + TYPEA + "/" + ownerName + NOTIFICATIONS;
-        ClientData clientData = ultraRestClient.get(url);
+        if (email != null) {
+            url += URLEncoder.encode(email, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        }
+        MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+        if (poolRecord != null) {
+            queryParams.add("poolRecord", poolRecord);
+        }
+        ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), SBTCNotificationList.class);
+    }
+
+    /**
+     * Creates new SBTCNotification in the specified zone and owner.
+     *
+     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param email      - The notification email.
+     * @param notification  - The notification object.
+     * @return - Status message
+     * @throws IOException - {@link IOException}
+     */
+    public String createNotification(String zoneName, String ownerName, String email, SBTCNotification notification)
+            throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + NOTIFICATIONS
+                + URLEncoder.encode(email, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(notification));
+        checkClientData(clientData);
+        return clientData.getBody();
+    }
+
+    /**
+     * Updates a probe with provided ID in the specified zone and owner.
+     *
+     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param email      - The notification email.
+     * @param notification  - The notification object.
+     * @return           - Status message
+     * @throws IOException - {@link IOException}
+     */
+    public String updateNotification(String zoneName, String ownerName, String email, SBTCNotification notification)
+            throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + NOTIFICATIONS
+                + URLEncoder.encode(email, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(notification));
+        checkClientData(clientData);
+        return clientData.getBody();
+    }
+
+    /**
+     * Deletes a notification with provided email in the specified zone and owner.
+     *
+     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param email       - The notification email.
+     * @throws IOException - {@link IOException}
+     */
+    public void deleteNotification(String zoneName, String ownerName, String email)
+            throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + NOTIFICATIONS
+                + URLEncoder.encode(email, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        ClientData clientData = ultraRestClient.delete(url);
+        checkClientData(clientData);
+        System.out.println(clientData.getStatus());
     }
 
     /**
