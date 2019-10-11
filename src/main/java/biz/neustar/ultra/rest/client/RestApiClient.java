@@ -469,15 +469,16 @@ public class RestApiClient {
      * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
      *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
      *                   (foo.zonename.com.)
-     * @param probeInfo - The probe.
+     * @param probeInfo - The probe. ID must be equal to target probe GUID
      * @return           - Status message
      * @throws IOException - {@link IOException}
      */
     public String updateProbe(String zoneName, String ownerName, ProbeInfo probeInfo)
             throws IOException {
         String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
-                + TYPEA + "/" + ownerName + PROBES;
-        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(probeInfo));
+                + TYPEA + "/" + ownerName + PROBES + "/"
+                + URLEncoder.encode(probeInfo.getId(), UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(probeInfo));
         checkClientData(clientData);
         return clientData.getBody();
     }
@@ -569,7 +570,7 @@ public class RestApiClient {
         String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
                 + TYPEA + "/" + ownerName + NOTIFICATIONS
                 + URLEncoder.encode(email, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
-        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(notification));
+        ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(notification));
         checkClientData(clientData);
         return clientData.getBody();
     }
