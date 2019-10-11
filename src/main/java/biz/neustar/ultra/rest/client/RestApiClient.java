@@ -278,27 +278,26 @@ public class RestApiClient {
             throws IOException {
 
         RRSet rrSet = new RRSet(zoneName, ownerName, recordType, ttl, rdata, null);
-        return createRRSet(zoneName, recordType, ownerName, rrSet);
+        return createRRSet(zoneName, rrSet);
     }
 
     /**
      * Creates a new RRSet in the specified zone.
      *
+     *
+     * @param zoneName
      * @param zoneName   - The zone that contains the RRSet.The trailing dot is optional.
-     * @param recordType - The type of the RRSet.This can be numeric (1) or if a well-known name is defined for the type
-     *                   (A), you can use it instead.
-     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
-     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
-     *                   (foo.zonename.com.)
      * @param rrSet      - rrSet to be created.
      * @return - Status message
      * @throws IOException - {@link IOException}
      */
-    public String createRRSet(String zoneName, String recordType, String ownerName, RRSet rrSet)
+    public String createRRSet(String zoneName, RRSet rrSet)
             throws IOException {
 
-        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
-                + recordType + "/" + ownerName;
+        String type = rrSet.getRrtype().replaceFirst(" *\\(\\d+\\)", "");
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue())
+                + RRSETS
+                + type + "/" + rrSet.getOwnerName();
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(rrSet));
         checkClientData(clientData);
         return clientData.getBody();
@@ -324,27 +323,26 @@ public class RestApiClient {
             throws IOException {
 
         RRSet rrSet = new RRSet(zoneName, ownerName, recordType, ttl, rdata, null);
-        return updateRRSet(zoneName, recordType, ownerName, rrSet);
+        return updateRRSet(zoneName, rrSet);
     }
 
     /**
      * Updates an existing RRSet in the specified zone.
      *
+     *
+     * @param zoneName
      * @param zoneName   - The zone that contains the RRSet.The trailing dot is optional.
-     * @param recordType - The type of the RRSet.This can be numeric (1) or if a well-known name is defined for the type
-     *                   (A), you can use it instead.
-     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
-     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
-     *                   (foo.zonename.com.)
      * @param rrSet      - rrSet to be created.
      * @return - Status message
      * @throws IOException - {@link IOException}
      */
-    public String updateRRSet(String zoneName, String recordType, String ownerName, RRSet rrSet)
+    public String updateRRSet(String zoneName, RRSet rrSet)
             throws IOException {
 
-        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
-                + recordType + "/" + ownerName;
+        String type = rrSet.getRrtype().replaceFirst(" *\\(\\d+\\)", "");
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue())
+                + RRSETS
+                + type + "/" + rrSet.getOwnerName();
         ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(rrSet));
         checkClientData(clientData);
         return clientData.getBody();
@@ -397,33 +395,15 @@ public class RestApiClient {
      * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
      *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
      *                   (foo.zonename.com.)
-     * @param poolRecord - The pool record associated with this probe. Pass null/empty when creating a pool-level probe.
-     * @param type       - PING, FTP, TCP, SMTP, SMTP_SEND, or DNS.
-     * @param interval   - HALF_MINUTE, ONE_MINUTE, TWO_MINUTES, FIVE_MINUTES (default), TEN_MINUTES, or
-     *                   FIFTEEN_MINUTES.
-     * @param agents     - See UltraDNS REST API User Guide for valid names.
-     * @param threshold  - Number of agents that must agree for a probe state to be changed. From 1 to the number of
-     *                   agents specified
-     * @param details    - Map of the type-specific fields for a probe. See UltraDNS REST API User Guide for fields.
-     * @return           - The id for this probe.
-     * @throws IOException - {@link IOException}
-     */
-    public String createProbe(String zoneName, String ownerName, String poolRecord,
-                              UltraRestSharedConstant.ProbeType type, UltraRestSharedConstant.ProbeInterval interval,
-                              List<String> agents, int threshold, Map<String, Object> details)
-            throws IOException {
-        ProbeInfo probeInfo = new ProbeInfo(null, poolRecord, type, interval, agents, threshold, details);
-        return createProbe(zoneName, ownerName, probeInfo);
-    }
-
-    /**
-     * Creates a new probe in the specified zone and owner.
-     *
-     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
-     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
-     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
-     *                   (foo.zonename.com.)
      * @param probeInfo  - The probe info object.
+     * probeInfo/poolRecord - The pool record associated with this probe. Pass null/empty when creating a pool-level probe.
+     * probeInfo/type       - PING, FTP, TCP, SMTP, SMTP_SEND, or DNS.
+     * probeInfo/interval   - HALF_MINUTE, ONE_MINUTE, TWO_MINUTES, FIVE_MINUTES (default), TEN_MINUTES, or
+     *                   FIFTEEN_MINUTES.
+     * probeInfo/agents     - See UltraDNS REST API User Guide for valid names.
+     * probeInfo/threshold  - Number of agents that must agree for a probe state to be changed. From 1 to the number of
+     *                   agents specified
+     * probeInfo/details    - Map of the type-specific fields for a probe. See UltraDNS REST API User Guide for fields.
      * @return           - The id for this probe.
      * @throws IOException - {@link IOException}
      */
@@ -443,33 +423,15 @@ public class RestApiClient {
      * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
      *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
      *                   (foo.zonename.com.)
-     * @param guid       - GUID of the probe.
-     * @param type       - PING, FTP, TCP, SMTP, SMTP_SEND, or DNS.
-     * @param interval   - HALF_MINUTE, ONE_MINUTE, TWO_MINUTES, FIVE_MINUTES (default), TEN_MINUTES, or
-     *                   FIFTEEN_MINUTES.
-     * @param agents     - See UltraDNS REST API User Guide for valid names.
-     * @param threshold  - Number of agents that must agree for a probe state to be changed. From 1 to the number of
-     *                   agents specified
-     * @param details    - Map of the type-specific fields for a probe. See UltraDNS REST API User Guide for fields.
-     * @return           - Status message
-     * @throws IOException - {@link IOException}
-     */
-    public String updateProbe(String zoneName, String ownerName, String guid,
-                              UltraRestSharedConstant.ProbeType type, UltraRestSharedConstant.ProbeInterval interval,
-                              List<String> agents, int threshold, Map<String, Object> details)
-            throws IOException {
-        ProbeInfo probeInfo = new ProbeInfo(guid, null, type, interval, agents, threshold, details);
-        return updateProbe(zoneName, ownerName, probeInfo);
-    }
-
-    /**
-     * Updates a probe with provided ID in the specified zone and owner.
-     *
-     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
-     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
-     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
-     *                   (foo.zonename.com.)
      * @param probeInfo - The probe. ID must be equal to target probe GUID
+     * probeInfo/guid       - GUID of the probe.
+     * probeInfo/type       - PING, FTP, TCP, SMTP, SMTP_SEND, or DNS.
+     * probeInfo/interval   - HALF_MINUTE, ONE_MINUTE, TWO_MINUTES, FIVE_MINUTES (default), TEN_MINUTES, or
+     *                   FIFTEEN_MINUTES.
+     * probeInfo/agents     - See UltraDNS REST API User Guide for valid names.
+     * probeInfo/threshold  - Number of agents that must agree for a probe state to be changed. From 1 to the number of
+     *                   agents specified
+     * probeInfo/details    - Map of the type-specific fields for a probe. See UltraDNS REST API User Guide for fields.
      * @return           - Status message
      * @throws IOException - {@link IOException}
      */

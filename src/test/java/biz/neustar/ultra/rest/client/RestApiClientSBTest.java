@@ -6,26 +6,19 @@
 package biz.neustar.ultra.rest.client;
 
 import biz.neustar.ultra.rest.client.exception.UltraClientException;
-import biz.neustar.ultra.rest.constants.TaskStatusCode;
 import biz.neustar.ultra.rest.constants.UltraRestErrorConstant;
 import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.dto.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.commons.httpclient.HttpStatus;
-import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -112,7 +105,7 @@ public class RestApiClientSBTest {
         rrSetWithSBPool.setProfile(profile);
 
         // create SB pool
-        result = REST_API_CLIENT.createRRSet(zoneName, "A", "foo", rrSetWithSBPool);
+        result = REST_API_CLIENT.createRRSet(zoneName, rrSetWithSBPool);
         assertNotNull(result);
         LOG.debug("result = " + result);
         RRSetList rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", null, 0, MAX_PAGE_SIZE,
@@ -130,7 +123,7 @@ public class RestApiClientSBTest {
         rrSetWithSBPool = rrsets.getRrSets().get(0);
         rrSetWithSBPool.getProfile().put("order", "FIXED");
         // update SB pool
-        result = REST_API_CLIENT.updateRRSet(zoneName, "A", "foo", rrSetWithSBPool);
+        result = REST_API_CLIENT.updateRRSet(zoneName, rrSetWithSBPool);
         assertNotNull(result);
         LOG.debug("result = " + result);
         rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", null, 0, MAX_PAGE_SIZE,
@@ -192,7 +185,7 @@ public class RestApiClientSBTest {
         RRSet rrSetWithSBPool = rrsets.getRrSets().get(0);
         rrSetWithSBPool.getProfile().put("order", "FIXED");
         // update SB pool
-        String result = REST_API_CLIENT.updateRRSet(zoneName, "A", ownerName, rrSetWithSBPool);
+        String result = REST_API_CLIENT.updateRRSet(zoneName, rrSetWithSBPool);
         assertNotNull(result);
         LOG.debug("result = " + result);
         rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:" + ownerName, 0, MAX_PAGE_SIZE,
@@ -225,7 +218,7 @@ public class RestApiClientSBTest {
 //        notifications = REST_API_CLIENT.getNotifications(zoneName, ownerName, null, null);
 //        assertNotNull(notifications);
 
-        REST_API_CLIENT.deleteNotification(zoneName, ownerName, "vitaliy.pavlyuk@team.neustar");
+//        REST_API_CLIENT.deleteNotification(zoneName, ownerName, "vitaliy.pavlyuk@team.neustar");
     }
 
 }
