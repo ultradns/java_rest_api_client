@@ -657,6 +657,22 @@ public class RestApiClient {
     }
 
     /**
+     * Perform a Batch operation asynchronously.
+     *
+     * @param batchRequests - The list of batch requests. Make sure the URIs are properly encoded as per Ultra REST API
+     *                      standards, for example the spaces are replaced with '%20' etc.
+     * @return - The task id of the created background task
+     */
+    public String asyncBatchOperation(@NotNull List<BatchRequest> batchRequests) throws IOException {
+        String url = BATCH;
+        MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+        queryParams.add("async", "true");
+        ClientData clientData = ultraRestClient.post(url, queryParams, JsonUtils.objectToJson(batchRequests));
+        checkClientData(clientData);
+        return clientData.getHeaders().getFirst("X-Task-Id");
+    }
+
+    /**
      * Build the {@link RestApiClient} for a Reseller's sub-account.
      *
      * @param subAccountName - The sub-account name to access.
