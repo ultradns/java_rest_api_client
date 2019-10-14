@@ -16,7 +16,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static biz.neustar.ultra.rest.client.exception.UltraClientErrors.checkClientData;
@@ -36,6 +35,7 @@ public class RestApiClient {
     private static final String RRSETS = "/rrsets/";
     private static final String TYPEA = "A";
     private static final String PROBES = "/probes";
+    private static final String ALERTS = "/alerts";
     private static final String NOTIFICATIONS = "/notifications/";
     private static final String AUTHORIZATION_TOKEN = "/authorization/token";
     private static final String TASK = "/tasks/";
@@ -463,6 +463,28 @@ public class RestApiClient {
         ClientData clientData = ultraRestClient.delete(url);
         checkClientData(clientData);
         System.out.println(clientData.getStatus());
+    }
+
+    /**
+     * Returns the list of AlertData for the specified zone and owner.
+     *
+     * @param zoneName  - The name of the zone. The user must have read access to the zone.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param q        - may contain status:STATUS,
+     *                 where STATUS is one of WARNING, CRITICAL, or FAIL
+     * @return - {@link AlertDataList}
+     * @throws IOException - {@link IOException}
+     */
+    public AlertDataList getProbeAlerts(String zoneName, String ownerName, String q, int offset, int limit,
+                                        UltraRestSharedConstant.ProbeAlertSort sort, boolean reverse) throws IOException {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + ALERTS;
+        ClientData clientData = ultraRestClient.get(url, queryParams);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), AlertDataList.class);
     }
 
     /**
