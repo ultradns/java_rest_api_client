@@ -34,32 +34,6 @@ public class RestApiClientSBTest {
     private static final RestApiClient REST_API_CLIENT = RestApiClient.buildRestApiClientWithUidPwd(USER_NAME, PASSWORD,
             URL, null);
 
-//    private RRSet makeTestRrsetWithSBPool(String zoneName, String ownerName, List<String> rdata) {
-//        RRSet rrSetWithSBPool = new RRSet(zoneName, ownerName, "A (1)", 300, rdata, null);
-//        Map<String, Object> profile = Maps.newHashMap();
-//        List<SBTCRDataInfo> rdataInfo = Lists.newArrayList();
-//        SBTCRDataInfo sbRdataInfo = new SBTCRDataInfo();
-//        sbRdataInfo.setFailOverDelay(25);
-//        sbRdataInfo.setPriority(1);
-//        sbRdataInfo.setRunProbes(true);
-//        sbRdataInfo.setState(UltraRestSharedConstant.RecordState.NORMAL);
-//        sbRdataInfo.setThreshold(1);
-//        rdataInfo.add(sbRdataInfo);
-//        profile.put("@context", UltraRestSharedConstant.ProfileType.SB_POOL.getContext());
-//        profile.put("rdataInfo", rdataInfo);
-//        biz.neustar.ultra.rest.dto.BackupRecord backupRecord = new biz.neustar.ultra.rest.dto.BackupRecord();
-//        backupRecord.setRdata("failOverRdata");
-//        backupRecord.setFailoverDelay(1);
-//        List<biz.neustar.ultra.rest.dto.BackupRecord> backupRecords = Lists.newArrayList(backupRecord);
-//        profile.put("backupRecords", backupRecords);
-//        profile.put("maxActive", 3);
-//        profile.put("maxServed", 2);
-//        rrSetWithSBPool.setProfile(profile);
-//
-//        return rrSetWithSBPool;
-//
-//    }
-
     @Test
     public void testSB1() throws IOException {
         String zoneName = System.currentTimeMillis() + "foo.invalid.";
@@ -136,18 +110,51 @@ public class RestApiClientSBTest {
         assertEquals("FIXED",
                 rrsets.getRrSets().get(0).getProfile().get("order"));
 
-        // TODO: provide full examples of probes etc CRUD
-//        Map<String, Object> details = Maps.newHashMap();
-//        List<TransactionInfo> transactions = Lists.newArrayList();
-//        TransactionInfo transactionInfo = new TransactionInfo();
-//        transactions.add(transactionInfo);
-//        details.put("transactions", transactions);
-//        // add a probe
-//        result = REST_API_CLIENT.createProbe(zoneName, "foo", null,
-//                UltraRestSharedConstant.ProbeType.HTTP, UltraRestSharedConstant.ProbeInterval.FIFTEEN_MINUTES,
-//                Lists.newArrayList("NEW_YORK", "DALLAS"), 2, details);
-//        assertNotNull(result);
-//        LOG.debug("result = " + result);
+        Map<String, Object> details = Maps.newHashMap();
+        List<TransactionInfo> transactions = Lists.newArrayList();
+        ProbeStatus connect = new ProbeStatus(10, 15, 20);
+        ProbeStatus avgConnect = new ProbeStatus(40, 50, 60);
+        ProbeStatus run = new ProbeStatus(70, 80, 90);
+        ProbeStatus avgRun = new ProbeStatus(11, 22, 33);
+        ProbeSearchString searchString = new ProbeSearchString("warning", "critical", "fail");
+        HttpLimitInfo limits = new HttpLimitInfo(connect, avgConnect, run, avgRun, searchString);
+        TransactionInfo transactionInfo = new TransactionInfo(UltraRestSharedConstant.ProbeHttpMethod.GET,
+                "http://blah.com", "", limits, true);
+        transactions.add(transactionInfo);
+        details.put("transactions", transactions);
+        // add a probe
+        ProbeInfo probeInfo = new ProbeInfo(null, null,
+                UltraRestSharedConstant.ProbeType.HTTP, UltraRestSharedConstant.ProbeInterval.FIFTEEN_MINUTES,
+                Lists.newArrayList("NEW_YORK", "DALLAS"), 2, details);
+        result = REST_API_CLIENT.createProbe(zoneName, "foo", probeInfo);
+        assertNotNull(result);
+        LOG.debug("result = " + result);
+
+        ProbeInfoList probeInfoList = REST_API_CLIENT.getProbes(zoneName, "foo", null);
+        assertNotNull(probeInfoList);
+        assertEquals(1, probeInfoList.getProbes().size());
+        ProbeInfo probe1 = probeInfoList.getProbes().get(0);
+        assertEquals(UltraRestSharedConstant.ProbeInterval.FIFTEEN_MINUTES, probe1.getInterval());
+        probe1.setInterval(UltraRestSharedConstant.ProbeInterval.ONE_MINUTE);
+        result = REST_API_CLIENT.updateProbe(zoneName, "foo", probe1);
+        assertNotNull(result);
+        LOG.debug("result = " + result);
+        probeInfoList = REST_API_CLIENT.getProbes(zoneName, "foo", null);
+        assertNotNull(probeInfoList);
+        assertEquals(1, probeInfoList.getProbes().size());
+        probe1 = probeInfoList.getProbes().get(0);
+        assertEquals(UltraRestSharedConstant.ProbeInterval.ONE_MINUTE, probe1.getInterval());
+        REST_API_CLIENT.deleteProbe(zoneName, "foo", probe1.getId());
+        try {
+            REST_API_CLIENT.getProbes(zoneName, "foo", null);
+            fail("Expected failure here");
+        } catch (UltraClientException e) {
+            assertEquals(404, e.getStatus());
+        } catch (Throwable t) {
+            fail("Expected different exception");
+        }
+
+        // TODO: provide full examples of notification etc CRUD
 
         REST_API_CLIENT.deleteRRSet(zoneName, "A", "foo");
         LOG.debug("foo." + zoneName + " deleted");
