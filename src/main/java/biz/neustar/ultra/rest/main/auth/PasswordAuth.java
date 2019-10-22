@@ -12,10 +12,9 @@ import org.apache.http.HttpStatus;
 import java.io.IOException;
 
 /**
- * OAuth 2.0 implementation of AddAuth.
+ * PasswordAuth implementation of AddAuth.
  * <p>
- * User provides the initial access token, refresh token, the auth URL, and an optional Callback.  Initial access token
- * acquisition is out of scope for this implementation.
+ * User provides the initial access token, username, the auth URL, and the Callback.
  */
 public class PasswordAuth implements AddAuth {
     private static final String AUTHORIZATION = "Authorization";
