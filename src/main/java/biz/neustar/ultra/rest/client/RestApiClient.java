@@ -26,6 +26,7 @@ import biz.neustar.ultra.rest.dto.ZoneProperties;
 import biz.neustar.ultra.rest.main.ClientData;
 import biz.neustar.ultra.rest.main.UltraRestClient;
 import biz.neustar.ultra.rest.main.UltraRestClientFactory;
+import biz.neustar.ultra.rest.main.auth.PasswordAuth;
 import biz.neustar.ultra.rest.main.auth.OAuth;
 import com.google.common.base.Strings;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
@@ -89,6 +90,13 @@ public class RestApiClient {
             OAuth.Callback callback) {
         return new RestApiClient(UltraRestClientFactory.createRestClientOAuthUserPwdCallback(url, username, password,
                 AUTHORIZATION_TOKEN, callback));
+    }
+
+    public static RestApiClient buildRestApiClientWithUidPwd(String username, String url,
+            PasswordAuth.Callback callback) {
+        return new RestApiClient(
+                UltraRestClientFactory.createRestClientPasswordAuthUserPwd(url, username, AUTHORIZATION_TOKEN,
+                        callback));
     }
 
     /**
