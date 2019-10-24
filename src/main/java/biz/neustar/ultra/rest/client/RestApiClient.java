@@ -3,7 +3,31 @@ package biz.neustar.ultra.rest.client;
 import biz.neustar.ultra.rest.client.util.JsonUtils;
 import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.constants.ZoneType;
-import biz.neustar.ultra.rest.dto.*;
+import biz.neustar.ultra.rest.dto.AccountList;
+import biz.neustar.ultra.rest.dto.AlertDataList;
+import biz.neustar.ultra.rest.dto.BatchRequest;
+import biz.neustar.ultra.rest.dto.BatchResponse;
+import biz.neustar.ultra.rest.dto.CreateType;
+import biz.neustar.ultra.rest.dto.NameServerIpList;
+import biz.neustar.ultra.rest.dto.PrimaryNameServers;
+import biz.neustar.ultra.rest.dto.PrimaryZoneInfo;
+import biz.neustar.ultra.rest.dto.ProbeInfo;
+import biz.neustar.ultra.rest.dto.ProbeInfoList;
+import biz.neustar.ultra.rest.dto.RRSet;
+import biz.neustar.ultra.rest.dto.RRSetList;
+import biz.neustar.ultra.rest.dto.SBTCNotification;
+import biz.neustar.ultra.rest.dto.SBTCNotificationList;
+import biz.neustar.ultra.rest.dto.SecondaryZoneInfo;
+import biz.neustar.ultra.rest.dto.Status;
+import biz.neustar.ultra.rest.dto.TaskStatusInfo;
+import biz.neustar.ultra.rest.dto.TokenResponse;
+import biz.neustar.ultra.rest.dto.Version;
+import biz.neustar.ultra.rest.dto.WebForward;
+import biz.neustar.ultra.rest.dto.WebForwardList;
+import biz.neustar.ultra.rest.dto.Zone;
+import biz.neustar.ultra.rest.dto.ZoneInfoList;
+import biz.neustar.ultra.rest.dto.ZoneOutInfo;
+import biz.neustar.ultra.rest.dto.ZoneProperties;
 import biz.neustar.ultra.rest.main.ClientData;
 import biz.neustar.ultra.rest.main.UltraRestClient;
 import biz.neustar.ultra.rest.main.UltraRestClientFactory;
@@ -26,6 +50,7 @@ import static biz.neustar.ultra.rest.client.exception.UltraClientErrors.checkCli
  * logos and symbols may be trademarks of their respective owners.
  */
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RestApiClient {
     public static final String ACCOUNTS = "accounts";
     public static final String VERSION = "version";
@@ -396,7 +421,7 @@ public class RestApiClient {
      *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
      *                   (foo.zonename.com.)
      * @param probeInfo  - The probe info object.
-     * probeInfo/poolRecord - The pool record associated with this probe. Pass null/empty when creating a pool-level probe.
+     * probeInfo/poolRecord - The pool record associated with this probe. Pass null/empty for a pool-level probe.
      * probeInfo/type       - PING, FTP, TCP, SMTP, SMTP_SEND, or DNS.
      * probeInfo/interval   - HALF_MINUTE, ONE_MINUTE, TWO_MINUTES, FIVE_MINUTES (default), TEN_MINUTES, or
      *                   FIFTEEN_MINUTES.
@@ -478,7 +503,8 @@ public class RestApiClient {
      * @throws IOException - {@link IOException}
      */
     public AlertDataList getProbeAlerts(String zoneName, String ownerName, String q, int offset, int limit,
-                                        UltraRestSharedConstant.ProbeAlertSort sort, boolean reverse) throws IOException {
+                                        UltraRestSharedConstant.ProbeAlertSort sort, boolean reverse)
+            throws IOException {
         MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
         String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
                 + TYPEA + "/" + ownerName + ALERTS;

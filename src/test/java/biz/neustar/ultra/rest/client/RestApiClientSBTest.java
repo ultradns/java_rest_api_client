@@ -11,7 +11,6 @@ import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.dto.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,60 +171,4 @@ public class RestApiClientSBTest {
 
         REST_API_CLIENT.deleteZone(zoneName);
     }
-
-    @Test
-    @Ignore
-    public void testSB2() throws IOException {
-        String zoneName = "geopoolmappingtm.com.";
-        String ownerName = "_rest_of_world._a_1.ex12a";
-
-        RRSetList rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:" + ownerName, 0, MAX_PAGE_SIZE,
-                UltraRestSharedConstant.RRListSortType.OWNER, false);
-        assertNotNull(rrsets);
-        LOG.debug("rrsets = " + rrsets);
-        assertNotNull(rrsets.getRrSets());
-        assertNotNull(rrsets.getRrSets().get(0));
-        assertNotNull(rrsets.getRrSets().get(0).getProfile());
-        assertEquals(UltraRestSharedConstant.ProfileType.SB_POOL.getContext(),
-                rrsets.getRrSets().get(0).getProfile().get("@context"));
-
-        RRSet rrSetWithSBPool = rrsets.getRrSets().get(0);
-        rrSetWithSBPool.getProfile().put("order", "FIXED");
-        // update SB pool
-        String result = REST_API_CLIENT.updateRRSet(zoneName, rrSetWithSBPool);
-        assertNotNull(result);
-        LOG.debug("result = " + result);
-        rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:" + ownerName, 0, MAX_PAGE_SIZE,
-                UltraRestSharedConstant.RRListSortType.OWNER, false);
-        assertNotNull(rrsets);
-        LOG.debug("rrsets = " + rrsets);
-        assertNotNull(rrsets.getRrSets());
-        assertNotNull(rrsets.getRrSets().get(0));
-        assertNotNull(rrsets.getRrSets().get(0).getProfile());
-        assertEquals("FIXED",
-                rrsets.getRrSets().get(0).getProfile().get("order"));
-
-        ProbeInfoList probes = REST_API_CLIENT.getProbes(zoneName, ownerName, null);
-        assertNotNull(probes);
-        ProbeInfo probe = probes.getProbes().get(0);
-        probe.setInterval(UltraRestSharedConstant.ProbeInterval.FIFTEEN_MINUTES);
-        result = REST_API_CLIENT.updateProbe(zoneName, ownerName, probe);
-        assertNotNull(result);
-        LOG.debug("result = " + result);
-        probes = REST_API_CLIENT.getProbes(zoneName, ownerName, null);
-        assertNotNull(probes);
-
-//        SBTCNotificationList notifications = REST_API_CLIENT.getNotifications(zoneName, ownerName, null, "rajender.aindla@team.neustar");
-//        assertNotNull(notifications);
-//        SBTCNotification notification = notifications.getNotifications().get(0);
-//        notification.setEmail("vitaliy.pavlyuk@team.neustar");
-//        result = REST_API_CLIENT.updateNotification(zoneName, ownerName, "rajender.aindla@team.neustar", notification);
-//        assertNotNull(result);
-//        LOG.debug("result = " + result);
-//        notifications = REST_API_CLIENT.getNotifications(zoneName, ownerName, null, null);
-//        assertNotNull(notifications);
-
-//        REST_API_CLIENT.deleteNotification(zoneName, ownerName, "vitaliy.pavlyuk@team.neustar");
-    }
-
 }
