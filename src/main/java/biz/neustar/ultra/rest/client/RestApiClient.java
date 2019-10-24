@@ -4,14 +4,19 @@ import biz.neustar.ultra.rest.client.util.JsonUtils;
 import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.constants.ZoneType;
 import biz.neustar.ultra.rest.dto.AccountList;
+import biz.neustar.ultra.rest.dto.AlertDataList;
 import biz.neustar.ultra.rest.dto.BatchRequest;
 import biz.neustar.ultra.rest.dto.BatchResponse;
 import biz.neustar.ultra.rest.dto.CreateType;
 import biz.neustar.ultra.rest.dto.NameServerIpList;
 import biz.neustar.ultra.rest.dto.PrimaryNameServers;
 import biz.neustar.ultra.rest.dto.PrimaryZoneInfo;
+import biz.neustar.ultra.rest.dto.ProbeInfo;
+import biz.neustar.ultra.rest.dto.ProbeInfoList;
 import biz.neustar.ultra.rest.dto.RRSet;
 import biz.neustar.ultra.rest.dto.RRSetList;
+import biz.neustar.ultra.rest.dto.SBTCNotification;
+import biz.neustar.ultra.rest.dto.SBTCNotificationList;
 import biz.neustar.ultra.rest.dto.SecondaryZoneInfo;
 import biz.neustar.ultra.rest.dto.Status;
 import biz.neustar.ultra.rest.dto.TaskStatusInfo;
@@ -46,6 +51,7 @@ import static biz.neustar.ultra.rest.client.exception.UltraClientErrors.checkCli
  * logos and symbols may be trademarks of their respective owners.
  */
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class RestApiClient {
     public static final String ACCOUNTS = "accounts";
     public static final String VERSION = "version";
@@ -53,6 +59,10 @@ public class RestApiClient {
     public static final String ACCOUNTS1 = "accounts/";
     private static final String ZONES = "zones/";
     private static final String RRSETS = "/rrsets/";
+    private static final String TYPEA = "A";
+    private static final String PROBES = "/probes";
+    private static final String ALERTS = "/alerts";
+    private static final String NOTIFICATIONS = "/notifications/";
     private static final String AUTHORIZATION_TOKEN = "/authorization/token";
     private static final String TASK = "/tasks/";
     private static final String WEB_FORWARDS = "/webforwards";
@@ -301,9 +311,26 @@ public class RestApiClient {
             throws IOException {
 
         RRSet rrSet = new RRSet(zoneName, ownerName, recordType, ttl, rdata, null);
+        return createRRSet(zoneName, rrSet);
+    }
 
-        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
-                + recordType + "/" + ownerName;
+    /**
+     * Creates a new RRSet in the specified zone.
+     *
+     *
+     * @param zoneName
+     * @param zoneName   - The zone that contains the RRSet.The trailing dot is optional.
+     * @param rrSet      - rrSet to be created.
+     * @return - Status message
+     * @throws IOException - {@link IOException}
+     */
+    public String createRRSet(String zoneName, RRSet rrSet)
+            throws IOException {
+
+        String type = rrSet.getRrtype().replaceFirst(" *\\(\\d+\\)", "");
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue())
+                + RRSETS
+                + type + "/" + rrSet.getOwnerName();
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(rrSet));
         checkClientData(clientData);
         return clientData.getBody();
@@ -329,9 +356,26 @@ public class RestApiClient {
             throws IOException {
 
         RRSet rrSet = new RRSet(zoneName, ownerName, recordType, ttl, rdata, null);
+        return updateRRSet(zoneName, rrSet);
+    }
 
-        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
-                + recordType + "/" + ownerName;
+    /**
+     * Updates an existing RRSet in the specified zone.
+     *
+     *
+     * @param zoneName
+     * @param zoneName   - The zone that contains the RRSet.The trailing dot is optional.
+     * @param rrSet      - rrSet to be created.
+     * @return - Status message
+     * @throws IOException - {@link IOException}
+     */
+    public String updateRRSet(String zoneName, RRSet rrSet)
+            throws IOException {
+
+        String type = rrSet.getRrtype().replaceFirst(" *\\(\\d+\\)", "");
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue())
+                + RRSETS
+                + type + "/" + rrSet.getOwnerName();
         ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(rrSet));
         checkClientData(clientData);
         return clientData.getBody();
@@ -352,6 +396,221 @@ public class RestApiClient {
                 + recordType + "/" + ownerName;
         ClientData clientData = ultraRestClient.delete(url);
         checkClientData(clientData);
+    }
+
+    /**
+     * Returns the list of ProbeInfo for the specified zone and owner.
+     *
+     * @param zoneName  - The name of the zone. The user must have read access to the zone.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param q        - may contain (space separated if both) type:TYPE and poolRecord:POOL_RECORD,
+     *                 where TYPE is one of RECORD, POOL, or ALL (default, unless poolRecord is specified),
+     *                 and POOL_RECORD is the IPv4 or CNAME as a FQDN for the pool record.
+     *                 If poolRecord is specified, type of RECORD is assumed
+     * @return - {@link ProbeInfoList}
+     * @throws IOException - {@link IOException}
+     */
+    public ProbeInfoList getProbes(String zoneName, String ownerName, String q) throws IOException {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, null, null, null, null);
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + PROBES;
+        ClientData clientData = ultraRestClient.get(url, queryParams);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), ProbeInfoList.class);
+    }
+
+    /**
+     * Creates a new probe in the specified zone and owner.
+     *
+     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param probeInfo  - The probe info object.
+     * probeInfo/poolRecord - The pool record associated with this probe. Pass null/empty for a pool-level probe.
+     * probeInfo/type       - PING, FTP, TCP, SMTP, SMTP_SEND, or DNS.
+     * probeInfo/interval   - HALF_MINUTE, ONE_MINUTE, TWO_MINUTES, FIVE_MINUTES (default), TEN_MINUTES, or
+     *                   FIFTEEN_MINUTES.
+     * probeInfo/agents     - See UltraDNS REST API User Guide for valid names.
+     * probeInfo/threshold  - Number of agents that must agree for a probe state to be changed. From 1 to the number of
+     *                   agents specified
+     * probeInfo/details    - Map of the type-specific fields for a probe. See UltraDNS REST API User Guide for fields.
+     * @return           - The id for this probe.
+     * @throws IOException - {@link IOException}
+     */
+    public String createProbe(String zoneName, String ownerName, ProbeInfo probeInfo)
+            throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + PROBES;
+        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(probeInfo));
+        checkClientData(clientData);
+        return clientData.getBody();
+    }
+
+    /**
+     * Updates a probe with provided ID in the specified zone and owner.
+     *
+     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param probeInfo - The probe. ID must be equal to target probe GUID
+     * probeInfo/guid       - GUID of the probe.
+     * probeInfo/type       - PING, FTP, TCP, SMTP, SMTP_SEND, or DNS.
+     * probeInfo/interval   - HALF_MINUTE, ONE_MINUTE, TWO_MINUTES, FIVE_MINUTES (default), TEN_MINUTES, or
+     *                   FIFTEEN_MINUTES.
+     * probeInfo/agents     - See UltraDNS REST API User Guide for valid names.
+     * probeInfo/threshold  - Number of agents that must agree for a probe state to be changed. From 1 to the number of
+     *                   agents specified
+     * probeInfo/details    - Map of the type-specific fields for a probe. See UltraDNS REST API User Guide for fields.
+     * @return           - Status message
+     * @throws IOException - {@link IOException}
+     */
+    public String updateProbe(String zoneName, String ownerName, ProbeInfo probeInfo)
+            throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + PROBES + "/"
+                + URLEncoder.encode(probeInfo.getId(), UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(probeInfo));
+        checkClientData(clientData);
+        return clientData.getBody();
+    }
+
+    /**
+     * Deletes a probe with provided ID in the specified zone and owner.
+     *
+     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param guid       - GUID of the probe.
+     * @throws IOException - {@link IOException}
+     */
+    public void deleteProbe(String zoneName, String ownerName, String guid)
+            throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + PROBES + "/"
+                + URLEncoder.encode(guid, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        ClientData clientData = ultraRestClient.delete(url);
+        checkClientData(clientData);
+        System.out.println(clientData.getStatus());
+    }
+
+    /**
+     * Returns the list of AlertData for the specified zone and owner.
+     *
+     * @param zoneName  - The name of the zone. The user must have read access to the zone.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param q        - may contain status:STATUS,
+     *                 where STATUS is one of WARNING, CRITICAL, or FAIL
+     * @return - {@link AlertDataList}
+     * @throws IOException - {@link IOException}
+     */
+    public AlertDataList getProbeAlerts(String zoneName, String ownerName, String q, int offset, int limit,
+                                        UltraRestSharedConstant.ProbeAlertSort sort, boolean reverse)
+            throws IOException {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + ALERTS;
+        ClientData clientData = ultraRestClient.get(url, queryParams);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), AlertDataList.class);
+    }
+
+    /**
+     * Returns the list of SBTCNotification for the specified zone and owner.
+     *
+     * @param zoneName  - The name of the zone. The user must have read access to the zone.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param poolRecord - If not null, will only provide notifications associated with the given pool record.
+     * @param email      - If not null, will only provide notifications associated with the given email.
+     * @return - {@link SBTCNotificationList}
+     * @throws IOException - {@link IOException}
+     */
+    public SBTCNotificationList getNotifications(String zoneName, String ownerName, String poolRecord, String email)
+            throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + NOTIFICATIONS;
+        if (email != null) {
+            url += URLEncoder.encode(email, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        }
+        MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+        if (poolRecord != null) {
+            queryParams.add("poolRecord", poolRecord);
+        }
+        ClientData clientData = ultraRestClient.get(url, queryParams);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), SBTCNotificationList.class);
+    }
+
+    /**
+     * Creates new SBTCNotification in the specified zone and owner.
+     *
+     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param email      - The notification email.
+     * @param notification  - The notification object.
+     * @return - Status message
+     * @throws IOException - {@link IOException}
+     */
+    public String createNotification(String zoneName, String ownerName, String email, SBTCNotification notification)
+            throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + NOTIFICATIONS
+                + URLEncoder.encode(email, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(notification));
+        checkClientData(clientData);
+        return clientData.getBody();
+    }
+
+    /**
+     * Updates a probe with provided ID in the specified zone and owner.
+     *
+     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param email      - The notification email.
+     * @param notification  - The notification object.
+     * @return           - Status message
+     * @throws IOException - {@link IOException}
+     */
+    public String updateNotification(String zoneName, String ownerName, String email, SBTCNotification notification)
+            throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + NOTIFICATIONS
+                + URLEncoder.encode(email, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        ClientData clientData = ultraRestClient.put(url, JsonUtils.objectToJson(notification));
+        checkClientData(clientData);
+        return clientData.getBody();
+    }
+
+    /**
+     * Deletes a notification with provided email in the specified zone and owner.
+     *
+     * @param zoneName   - The zone that contains the RRSet. The trailing dot is optional.
+     * @param ownerName  - The owner name for the RRSet. If no trailing dot is supplied, the owner_name is assumed to be
+     *                   relative (foo). If a trailing dot is supplied, the owner name is assumed to be absolute
+     *                   (foo.zonename.com.)
+     * @param email       - The notification email.
+     * @throws IOException - {@link IOException}
+     */
+    public void deleteNotification(String zoneName, String ownerName, String email)
+            throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + RRSETS
+                + TYPEA + "/" + ownerName + NOTIFICATIONS
+                + URLEncoder.encode(email, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue());
+        ClientData clientData = ultraRestClient.delete(url);
+        checkClientData(clientData);
+        System.out.println(clientData.getStatus());
     }
 
     /**
@@ -389,8 +648,8 @@ public class RestApiClient {
         return JsonUtils.jsonToObject(clientData.getBody(), Status.class);
     }
 
-    private MultivaluedMap<String, String> buildQueryParams(String q, int offset, int limit, Enum sort,
-            boolean reverse) {
+    private MultivaluedMap<String, String> buildQueryParams(String q, Integer offset, Integer limit, Enum sort,
+            Boolean reverse) {
         MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
         if (!Strings.isNullOrEmpty(q)) {
             queryParams.add("q", q);
