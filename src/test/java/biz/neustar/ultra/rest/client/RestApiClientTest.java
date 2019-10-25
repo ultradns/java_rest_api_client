@@ -25,8 +25,10 @@ import biz.neustar.ultra.rest.dto.ZoneInfoList;
 import biz.neustar.ultra.rest.dto.ZoneOutInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.httpclient.HttpStatus;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,22 +45,38 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class RestApiClientTest {
+public class RestApiClientTest extends AbstractBaseRestApiClientTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(RestApiClientTest.class);
-    private static final int MAX_PAGE_SIZE = 1000;
+    private String zoneName;
+    private String accountName;
 
-    private static final String USER_NAME = System.getProperty("rest.username");
-    private static final String PASSWORD = System.getProperty("rest.password");
-    private static final String URL = System.getProperty("rest.url");
+    @Before
+    public void setup() throws IOException {
+        zoneName = getRandomZoneName();
 
-    private static final RestApiClient REST_API_CLIENT = RestApiClient.buildRestApiClientWithUidPwd(USER_NAME, PASSWORD,
-            URL, null);
+        AccountList accountList = REST_API_CLIENT.getAccountDetails();
+        assertNotNull(accountList);
+        accountName = accountList.getAccounts().get(0).getAccountName();
+        assertNotNull(accountName);
+        LOG.debug("accountName = " + accountName);
+
+        String result = REST_API_CLIENT.createPrimaryZone(accountName, zoneName);
+        assertNotNull(result);
+        LOG.debug("result = " + result);
+    }
+
+    @After
+    public void cleanup() throws IOException {
+        try {
+            REST_API_CLIENT.deleteZone(zoneName);
+        } catch (UltraClientException e) {
+            // do nothing
+        }
+    }
 
     @Test
     public void testPrimaryZoneBasicOperations() throws IOException {
-        String zoneName = System.currentTimeMillis() + "foo.invalid.";
-
         // Get the version of REST API server
         Version outVersion = REST_API_CLIENT.getVersion();
         Assert.assertNotNull(outVersion.getVersion());
@@ -71,13 +89,9 @@ public class RestApiClientTest {
 
         AccountList accountList = REST_API_CLIENT.getAccountDetails();
         assertNotNull(accountList);
-        String accountName = accountList.getAccounts().get(0).getAccountName();
+        accountName = accountList.getAccounts().get(0).getAccountName();
         assertNotNull(accountName);
         LOG.debug("accountName = " + accountName);
-
-        String result = REST_API_CLIENT.createPrimaryZone(accountName, zoneName);
-        assertNotNull(result);
-        LOG.debug("result = " + result);
 
         ZoneOutInfo zone = REST_API_CLIENT.getZoneMetadata(zoneName);
         assertNotNull(zone);
@@ -93,7 +107,7 @@ public class RestApiClientTest {
                 UltraRestSharedConstant.RRListSortType.OWNER, false);
         assertNotNull(rrsets);
         LOG.debug("rrsets = " + rrsets);
-        result = REST_API_CLIENT.createRRSet(firstZoneName, "A", "foo", 300, Arrays.asList("1.2.3.4"));
+        String result = REST_API_CLIENT.createRRSet(firstZoneName, "A", "foo", 300, Arrays.asList("1.2.3.4"));
         assertNotNull(result);
         LOG.debug("result = " + result);
         rrsets = REST_API_CLIENT.getRRSetsByType(firstZoneName, "A", null, 0, MAX_PAGE_SIZE,
@@ -129,7 +143,8 @@ public class RestApiClientTest {
             assertFalse(e.getErrors().isEmpty());
             assertEquals(1, e.getErrors().size());
             assertEquals(UltraRestErrorConstant.DATA_NOT_FOUND.getErrorCode(), e.getErrors().get(0).getErrorCode());
-            assertEquals(UltraRestErrorConstant.DATA_NOT_FOUND.getErrorMessage(), e.getErrors().get(0).getErrorMessage());
+            assertEquals(UltraRestErrorConstant.DATA_NOT_FOUND.getErrorMessage(),
+                    e.getErrors().get(0).getErrorMessage());
         }
 
         REST_API_CLIENT.deleteZone(zoneName);
@@ -209,19 +224,6 @@ public class RestApiClientTest {
 
     @Test
     public void testBasicWebForwardOperations() throws IOException {
-        String zoneName = System.currentTimeMillis() + "foo.invalid.";
-
-        // Create a primary zone for testing
-        AccountList accountList = REST_API_CLIENT.getAccountDetails();
-        assertNotNull(accountList);
-        String accountName = accountList.getAccounts().get(0).getAccountName();
-        assertNotNull(accountName);
-        LOG.debug("accountName = " + accountName);
-
-        String result = REST_API_CLIENT.createPrimaryZone(accountName, zoneName);
-        assertNotNull(result);
-        LOG.debug("result = " + result);
-
         // Create a web forward under the zone from foo.zone -> bar.invalid
         WebForward webForward = new WebForward();
         String requestTo = "foo." + zoneName + "/*";
@@ -260,27 +262,10 @@ public class RestApiClientTest {
 
         // Delete the web forward
         REST_API_CLIENT.deleteWebForward(zoneName, returnedWebForwardList.getWebForwards().get(0).getGuid());
-
-        // Delete the test zone
-        REST_API_CLIENT.deleteZone(zoneName);
     }
 
     @Test
     public void testAddARecordsInBatch() throws IOException {
-        String zoneName = System.currentTimeMillis() + "foo.invalid.";
-
-        // Test data setup - get the user account
-        AccountList accountList = REST_API_CLIENT.getAccountDetails();
-        assertNotNull(accountList);
-        String accountName = accountList.getAccounts().get(0).getAccountName();
-        assertNotNull(accountName);
-        LOG.debug("accountName = " + accountName);
-
-        // Test data setup - create a test zone
-        String result = REST_API_CLIENT.createPrimaryZone(accountName, zoneName);
-        assertNotNull(result);
-        LOG.debug("result = " + result);
-
         // Add multiple A records in a Batch
         List<BatchRequest> batchRequests = Lists.newArrayList(
                 new BatchRequest(BatchRequest.Method.POST, "/v2/zones/" + zoneName + "/rrsets/A/a",
@@ -308,27 +293,10 @@ public class RestApiClientTest {
         rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:c." + zoneName, 0, MAX_PAGE_SIZE,
                 UltraRestSharedConstant.RRListSortType.OWNER, false);
         assertEquals(1, rrsets.getResultInfo().getReturnedCount());
-
-        // Delete the test zone
-        REST_API_CLIENT.deleteZone(zoneName);
     }
 
     @Test
     public void testAddARecordsInBatchAsync() throws IOException, InterruptedException {
-        String zoneName = System.currentTimeMillis() + "foo.invalid.";
-
-        // Test data setup - get the user account
-        AccountList accountList = REST_API_CLIENT.getAccountDetails();
-        assertNotNull(accountList);
-        String accountName = accountList.getAccounts().get(0).getAccountName();
-        assertNotNull(accountName);
-        LOG.debug("accountName = " + accountName);
-
-        // Test data setup - create a test zone
-        String result = REST_API_CLIENT.createPrimaryZone(accountName, zoneName);
-        assertNotNull(result);
-        LOG.debug("result = " + result);
-
         // Add multiple A records in a Batch
         List<BatchRequest> batchRequests = Lists.newArrayList(
                 new BatchRequest(BatchRequest.Method.POST, "/v2/zones/" + zoneName + "/rrsets/A/a",
@@ -356,15 +324,11 @@ public class RestApiClientTest {
         rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:c." + zoneName, 0, MAX_PAGE_SIZE,
                 UltraRestSharedConstant.RRListSortType.OWNER, false);
         assertEquals(1, rrsets.getResultInfo().getReturnedCount());
-
-        // Delete the test zone
-        REST_API_CLIENT.deleteZone(zoneName);
     }
 
     @Test
     public void testBasicResellerOperations() throws IOException {
         Assume.assumeTrue("true".equalsIgnoreCase(System.getProperty("test.reseller")));
-        String zoneName = System.currentTimeMillis() + "foo.invalid.";
 
         // Get the list of sub-accounts
         AccountList subAccountList = REST_API_CLIENT.listSubAccounts(null, 0, 100, false);

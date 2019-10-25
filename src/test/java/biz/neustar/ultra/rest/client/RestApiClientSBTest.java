@@ -11,6 +11,8 @@ import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.dto.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,32 +23,39 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class RestApiClientSBTest {
+public class RestApiClientSBTest extends AbstractBaseRestApiClientTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(RestApiClientSBTest.class);
-    private static final int MAX_PAGE_SIZE = 1000;
 
-    private static final String USER_NAME = System.getProperty("rest.username");
-    private static final String PASSWORD = System.getProperty("rest.password");
-    private static final String URL = System.getProperty("rest.url");
+    private String zoneName;
+    private String accountName;
 
-    private static final RestApiClient REST_API_CLIENT = RestApiClient.buildRestApiClientWithUidPwd(USER_NAME, PASSWORD,
-            URL, null);
-
-    @Test
-    public void testSB1() throws IOException {
-        String zoneName = System.currentTimeMillis() + "foo.invalid.";
+    @Before
+    public void setup() throws IOException {
+        zoneName = getRandomZoneName();
 
         AccountList accountList = REST_API_CLIENT.getAccountDetails();
         assertNotNull(accountList);
-        String accountName = accountList.getAccounts().get(0).getAccountName();
+        accountName = accountList.getAccounts().get(0).getAccountName();
         assertNotNull(accountName);
         LOG.debug("accountName = " + accountName);
 
         String result = REST_API_CLIENT.createPrimaryZone(accountName, zoneName);
         assertNotNull(result);
         LOG.debug("result = " + result);
+    }
 
+    @After
+    public void cleanup() throws IOException {
+        try {
+            REST_API_CLIENT.deleteZone(zoneName);
+        } catch (UltraClientException e) {
+            // do nothing
+        }
+    }
+
+    @Test
+    public void testSB1() throws IOException {
         ZoneOutInfo zone = REST_API_CLIENT.getZoneMetadata(zoneName);
         assertNotNull(zone);
         LOG.debug("zone = " + zone);
@@ -78,7 +87,7 @@ public class RestApiClientSBTest {
         rrSetWithSBPool.setProfile(profile);
 
         // create SB pool
-        result = REST_API_CLIENT.createRRSet(zoneName, rrSetWithSBPool);
+        String result = REST_API_CLIENT.createRRSet(zoneName, rrSetWithSBPool);
         assertNotNull(result);
         LOG.debug("result = " + result);
         RRSetList rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", null, 0, MAX_PAGE_SIZE,
