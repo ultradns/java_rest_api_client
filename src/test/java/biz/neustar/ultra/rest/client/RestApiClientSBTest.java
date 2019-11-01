@@ -62,19 +62,39 @@ public class RestApiClientSBTest extends AbstractBaseRestApiClientTest {
 
         String ownerName = "foo";
 
+        // create SB pool
+
         List<String> rdata = Lists.newArrayList();
+        rdata.add("1.1.2.3");
+        rdata.add("1.2.3.5");
         rdata.add("2.3.5.8");
 
         RRSet rrSetWithSBPool = new RRSet(zoneName, ownerName, "A (1)", 300, rdata, null);
         Map<String, Object> profile = Maps.newHashMap();
+
+        // rdata & rdataInfo must be of the same size!
         List<SBTCRDataInfo> rdataInfo = Lists.newArrayList();
-        SBTCRDataInfo sbRdataInfo = new SBTCRDataInfo();
-        sbRdataInfo.setFailOverDelay(25);
-        sbRdataInfo.setPriority(1);
-        sbRdataInfo.setRunProbes(true);
-        sbRdataInfo.setState(UltraRestSharedConstant.RecordState.NORMAL);
-        sbRdataInfo.setThreshold(1);
-        rdataInfo.add(sbRdataInfo);
+        SBTCRDataInfo sbRdataInfo1 = new SBTCRDataInfo();
+        sbRdataInfo1.setFailOverDelay(25);
+        sbRdataInfo1.setPriority(1);
+        sbRdataInfo1.setRunProbes(true);
+        sbRdataInfo1.setState(UltraRestSharedConstant.RecordState.NORMAL);
+        sbRdataInfo1.setThreshold(1);
+        rdataInfo.add(sbRdataInfo1);
+        SBTCRDataInfo sbRdataInfo2 = new SBTCRDataInfo();
+        sbRdataInfo2.setFailOverDelay(25);
+        sbRdataInfo2.setPriority(2);
+        sbRdataInfo2.setRunProbes(true);
+        sbRdataInfo2.setState(UltraRestSharedConstant.RecordState.NORMAL);
+        sbRdataInfo2.setThreshold(1);
+        rdataInfo.add(sbRdataInfo2);
+        SBTCRDataInfo sbRdataInfo3 = new SBTCRDataInfo();
+        sbRdataInfo3.setFailOverDelay(25);
+        sbRdataInfo3.setPriority(3);
+        sbRdataInfo3.setRunProbes(true);
+        sbRdataInfo3.setState(UltraRestSharedConstant.RecordState.NORMAL);
+        sbRdataInfo3.setThreshold(1);
+        rdataInfo.add(sbRdataInfo3);
         profile.put("@context", UltraRestSharedConstant.ProfileType.SB_POOL.getContext());
         profile.put("rdataInfo", rdataInfo);
         biz.neustar.ultra.rest.dto.BackupRecord backupRecord = new biz.neustar.ultra.rest.dto.BackupRecord();
@@ -82,29 +102,53 @@ public class RestApiClientSBTest extends AbstractBaseRestApiClientTest {
         backupRecord.setFailoverDelay(1);
         List<biz.neustar.ultra.rest.dto.BackupRecord> backupRecords = Lists.newArrayList(backupRecord);
         profile.put("backupRecords", backupRecords);
-        profile.put("maxActive", 1);
-        profile.put("maxServed", 1);
+        profile.put("maxActive", 3);
+        profile.put("maxServed", 3);
         rrSetWithSBPool.setProfile(profile);
 
-        // create SB pool
         String result = REST_API_CLIENT.createRRSet(zoneName, rrSetWithSBPool);
         assertNotNull(result);
         LOG.debug("result = " + result);
+
+        // read back the newly created pool
+
         RRSetList rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", null, 0, MAX_PAGE_SIZE,
                 UltraRestSharedConstant.RRListSortType.OWNER, false);
         assertNotNull(rrsets);
         LOG.debug("rrsets = " + rrsets);
         assertNotNull(rrsets.getRrSets());
         assertNotNull(rrsets.getRrSets().get(0));
+        assertEquals(3, rrsets.getRrSets().get(0).getRdata().size());
         assertNotNull(rrsets.getRrSets().get(0).getProfile());
         assertEquals(UltraRestSharedConstant.ProfileType.SB_POOL.getContext(),
                 rrsets.getRrSets().get(0).getProfile().get("@context"));
         assertEquals("ROUND_ROBIN",
                 rrsets.getRrSets().get(0).getProfile().get("order"));
+        assertEquals(3, ((List<SBTCRDataInfo>) rrsets.getRrSets().get(0).getProfile().get("rdataInfo")).size());
+
+        // update SB pool. For example, let's say we have to change order to FIXED and remove the record with 1.2.3.5
 
         rrSetWithSBPool = rrsets.getRrSets().get(0);
         rrSetWithSBPool.getProfile().put("order", "FIXED");
-        // update SB pool
+
+        rdata = rrSetWithSBPool.getRdata();
+        rdataInfo = (List<SBTCRDataInfo>) rrSetWithSBPool.getProfile().get("rdataInfo");
+        assertTrue(rdata.size() == rdataInfo.size());
+        // find the index to delete; then delete from both lists
+        int indexToDeleteAt = -1;
+        for (int i = 0; i < rdata.size(); i++) {
+            if ("1.2.3.5".equals(rdata.get(i))) {
+                indexToDeleteAt = i;
+                break;
+            }
+        }
+        assertTrue(indexToDeleteAt != -1);
+        if (indexToDeleteAt > -1) {
+            rdata.remove(indexToDeleteAt);
+            rdataInfo.remove(indexToDeleteAt);
+        }
+        assertTrue(rdata.size() == rdataInfo.size());
+
         result = REST_API_CLIENT.updateRRSet(zoneName, rrSetWithSBPool);
         assertNotNull(result);
         LOG.debug("result = " + result);
@@ -114,9 +158,11 @@ public class RestApiClientSBTest extends AbstractBaseRestApiClientTest {
         LOG.debug("rrsets = " + rrsets);
         assertNotNull(rrsets.getRrSets());
         assertNotNull(rrsets.getRrSets().get(0));
+        assertEquals(2, rrsets.getRrSets().get(0).getRdata().size());
         assertNotNull(rrsets.getRrSets().get(0).getProfile());
         assertEquals("FIXED",
                 rrsets.getRrSets().get(0).getProfile().get("order"));
+        assertEquals(2, ((List<SBTCRDataInfo>) rrsets.getRrSets().get(0).getProfile().get("rdataInfo")).size());
 
         Map<String, Object> details = Maps.newHashMap();
         List<TransactionInfo> transactions = Lists.newArrayList();
