@@ -31,8 +31,8 @@ import biz.neustar.ultra.rest.dto.ZoneProperties;
 import biz.neustar.ultra.rest.main.ClientData;
 import biz.neustar.ultra.rest.main.UltraRestClient;
 import biz.neustar.ultra.rest.main.UltraRestClientFactory;
-import biz.neustar.ultra.rest.main.auth.PasswordAuth;
 import biz.neustar.ultra.rest.main.auth.OAuth;
+import biz.neustar.ultra.rest.main.auth.PasswordAuth;
 import com.google.common.base.Strings;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
@@ -66,7 +66,7 @@ public class RestApiClient {
     private static final String AUTHORIZATION_TOKEN = "/authorization/token";
     private static final String TASK = "/tasks/";
     private static final String WEB_FORWARDS = "/webforwards";
-    private static final String DNSSEC = "/dnssec";
+    private static final String UNSUSPEND = "/unsuspend";
     private static final String BATCH = "batch";
     private static final String SUB_ACCOUNTS = "subaccounts/";
     private static final String TOKEN = "/token";
@@ -144,10 +144,24 @@ public class RestApiClient {
      */
     public String createSecondaryZone(String accountName, String zoneName, NameServerIpList nameServerIpList,
             String notificationEmailAddress) throws IOException {
-
         ZoneProperties zoneProperties = new ZoneProperties(zoneName, accountName, ZoneType.SECONDARY, null, null, null);
+
         SecondaryZoneInfo secondaryZoneInfo = new SecondaryZoneInfo(new PrimaryNameServers(nameServerIpList));
         secondaryZoneInfo.setNotificationEmailAddress(notificationEmailAddress);
+
+        return createSecondaryZone(zoneProperties, secondaryZoneInfo);
+    }
+
+    /**
+     * Create a secondary zone.
+     *
+     * @param zoneProperties    - {@link ZoneProperties}
+     * @param secondaryZoneInfo - {@link SecondaryZoneInfo}
+     * @return - The task id of the secondary zone creation request
+     * @throws IOException - {@link IOException}
+     */
+    public String createSecondaryZone(ZoneProperties zoneProperties, SecondaryZoneInfo secondaryZoneInfo)
+            throws IOException {
         Zone zone = new Zone(zoneProperties, null, secondaryZoneInfo, null);
         String url = ZONES;
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(zone));
@@ -227,6 +241,18 @@ public class RestApiClient {
         ClientData clientData = ultraRestClient.get(url);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), ZoneOutInfo.class);
+    }
+
+    /**
+     * Unsuspend a zone.
+     *
+     * @param zoneName - The name of the zone
+     */
+    public Status unsuspendZone(String zoneName) throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + UNSUSPEND;
+        ClientData clientData = ultraRestClient.post(url);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), Status.class);
     }
 
     /**

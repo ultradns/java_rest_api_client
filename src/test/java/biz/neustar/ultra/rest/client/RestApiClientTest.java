@@ -6,7 +6,7 @@
 package biz.neustar.ultra.rest.client;
 
 import biz.neustar.ultra.rest.client.exception.UltraClientException;
-import biz.neustar.ultra.rest.constants.TaskStatusCode;
+import biz.neustar.ultra.rest.client.testutil.TaskUtil;
 import biz.neustar.ultra.rest.constants.UltraRestErrorConstant;
 import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
 import biz.neustar.ultra.rest.dto.AccountList;
@@ -17,7 +17,6 @@ import biz.neustar.ultra.rest.dto.NameServerIpList;
 import biz.neustar.ultra.rest.dto.RRSet;
 import biz.neustar.ultra.rest.dto.RRSetList;
 import biz.neustar.ultra.rest.dto.Status;
-import biz.neustar.ultra.rest.dto.TaskStatusInfo;
 import biz.neustar.ultra.rest.dto.Version;
 import biz.neustar.ultra.rest.dto.WebForward;
 import biz.neustar.ultra.rest.dto.WebForwardList;
@@ -27,7 +26,6 @@ import com.google.common.collect.Lists;
 import org.apache.commons.httpclient.HttpStatus;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,12 +35,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class RestApiClientTest extends AbstractBaseRestApiClientTest {
@@ -162,11 +158,6 @@ public class RestApiClientTest extends AbstractBaseRestApiClientTest {
         String tsigAlgorithm1 = null;
         String notificationEmailAddress = "foo@bar.com";
 
-        AccountList accountList = REST_API_CLIENT.getAccountDetails();
-        assertNotNull(accountList);
-        String accountName = accountList.getAccounts().get(0).getAccountName();
-        assertNotNull(accountName);
-
         NameServer nameServerIp1 = new NameServer(ip1, tsigKey1, tsigKeyValue1, tsigAlgorithm1);
         NameServer nameServerIp2 = null;
         NameServer nameServerIp3 = null;
@@ -178,7 +169,7 @@ public class RestApiClientTest extends AbstractBaseRestApiClientTest {
         assertNotNull(taskId);
 
         // Check the secondary zone creation task is finished successfully
-        checkTaskCompletedSuccessfully(10, 10, taskId);
+        TaskUtil.checkTaskCompletedSuccessfully(REST_API_CLIENT, 10, 10, taskId);
 
         ZoneOutInfo zone = REST_API_CLIENT.getZoneMetadata(zoneName);
         assertNotNull(zone);
@@ -193,33 +184,6 @@ public class RestApiClientTest extends AbstractBaseRestApiClientTest {
         String firstZoneName = allZones.getZones().get(0).getProperties().getName();
 
         REST_API_CLIENT.deleteZone(zoneName);
-    }
-
-    /**
-     * Check if the task is completed with expected status.
-     *
-     * @param maxRetryCount     The max retry count.
-     * @param intervalInSeconds The interval in seconds.
-     * @param taskId            The task Id to check.
-     */
-    private void checkTaskCompletedSuccessfully(final int maxRetryCount, final int intervalInSeconds, String taskId)
-            throws InterruptedException, IOException {
-        LOG.info("Checking for task to finish with status as '{}' for task Id '{}'. ", TaskStatusCode.COMPLETE.name(),
-                taskId);
-        TaskStatusInfo taskStatusInfo = REST_API_CLIENT.getTaskStatus(taskId);
-        int pollCount = 0;
-        while ((TaskStatusCode.PENDING == taskStatusInfo.getCode()
-                || TaskStatusCode.IN_PROCESS == taskStatusInfo.getCode()) && pollCount != maxRetryCount) {
-            pollCount++;
-            LOG.info("Fetching task status for task Id '{}' with retry {} out of {}. ", taskId, pollCount,
-                    maxRetryCount);
-            Thread.sleep(TimeUnit.SECONDS.toMillis(intervalInSeconds));
-            taskStatusInfo = REST_API_CLIENT.getTaskStatus(taskId);
-        }
-        String taskStatus = taskStatusInfo.getCode().toString();
-        assertTrue(String.format("For task Id '%s', expected status is '%s, but got '%s'.", taskId,
-                TaskStatusCode.COMPLETE.name(), taskStatus),
-                TaskStatusCode.COMPLETE.name().equalsIgnoreCase(taskStatus));
     }
 
     @Test
@@ -310,7 +274,7 @@ public class RestApiClientTest extends AbstractBaseRestApiClientTest {
         assertNotNull(taskId);
 
         // Check the secondary zone creation task is finished successfully
-        checkTaskCompletedSuccessfully(10, 10, taskId);
+        TaskUtil.checkTaskCompletedSuccessfully(REST_API_CLIENT, 10, 10, taskId);
 
         // Verify that the records were created successfully
         RRSetList rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:a." + zoneName, 0, MAX_PAGE_SIZE,
@@ -324,51 +288,5 @@ public class RestApiClientTest extends AbstractBaseRestApiClientTest {
         rrsets = REST_API_CLIENT.getRRSetsByType(zoneName, "A", "owner:c." + zoneName, 0, MAX_PAGE_SIZE,
                 UltraRestSharedConstant.RRListSortType.OWNER, false);
         assertEquals(1, rrsets.getResultInfo().getReturnedCount());
-    }
-
-    @Test
-    public void testBasicResellerOperations() throws IOException {
-        Assume.assumeTrue("true".equalsIgnoreCase(System.getProperty("test.reseller")));
-
-        // Get the list of sub-accounts
-        AccountList subAccountList = REST_API_CLIENT.listSubAccounts(null, 0, 100, false);
-        assertNotNull(subAccountList);
-        String subAccountName = subAccountList.getAccounts().get(0).getAccountName();
-        assertNotNull(subAccountName);
-        LOG.debug("accountName = " + subAccountName);
-
-        // Get the RestApiClient to access a sub-account resources.
-        LOG.debug("Getting the RestApiClient to access the resournces of sub-account:  " + subAccountName);
-        RestApiClient subAccountRestApiClient = REST_API_CLIENT.buildRestApiClientForSubAccountAccess(subAccountName);
-        assertNotNull(subAccountRestApiClient);
-
-        // Create a zone in the sub-account using sub-Account RestApiClient
-        String result = subAccountRestApiClient.createPrimaryZone(subAccountName, zoneName);
-        assertNotNull(result);
-        LOG.debug("result = " + result);
-
-        // Verify that the zone in the sub-account is created
-        ZoneOutInfo zone = subAccountRestApiClient.getZoneMetadata(zoneName);
-        assertNotNull(zone);
-        LOG.debug("zone = " + zone);
-
-        // List the Reseller's sub-accounts zones. Make sure to use Reseller's RestApiClient
-        ZoneInfoList allZones = REST_API_CLIENT.listSubAccountsZones("name:" + zoneName, 0, 5,
-                UltraRestSharedConstant.ZoneListSortType.NAME, true);
-        assertNotNull(allZones);
-        String firstZoneName = allZones.getZones().get(0).getProperties().getName();
-        LOG.debug("firstZoneName = " + firstZoneName);
-
-        // Reseller's RestApiClient cannot access sub-account's zone directly
-        try {
-            REST_API_CLIENT.getRRSets(firstZoneName, null, 0, MAX_PAGE_SIZE,
-                    UltraRestSharedConstant.RRListSortType.OWNER, false);
-            fail("Expecting an exception");
-        } catch (UltraClientException e) {
-            assertEquals(HttpStatus.SC_FORBIDDEN, e.getStatus());
-        }
-
-        // Delete the sub-account zone created
-        subAccountRestApiClient.deleteZone(zoneName);
     }
 }

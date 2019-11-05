@@ -3,3 +3,7 @@
 *.iml
 out
 build
+*.java_*
+.DS_Store
+*.tmp
+
