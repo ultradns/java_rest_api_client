@@ -219,6 +219,16 @@ public final class UltraRestClient {
      */
     public ClientData post(final String url) {
         LOGGER.debug("Executing POST request for " + baseUrl + url);
+        return toClientData(method(POST, getBuilder(getWebResource(fixUrl(url)))));
+    }
+
+    /**
+     * To execute post operation.
+     *
+     * @param url - Resource URL
+     * @return - Return response in JSON string format.
+     */
+    public ClientData retryablePost(final String url) {
         return toClientData(retryableMethod(POST, () -> getBuilder(getWebResource(fixUrl(url)))));
     }
 
@@ -285,7 +295,7 @@ public final class UltraRestClient {
      */
     public ClientData delete(final String url) {
         LOGGER.debug("Executing DELETE request for " + baseUrl + url);
-        return toClientData(retryableMethod(DELETE, () -> getBuilder(getWebResource(fixUrl(url)))));
+        return toClientData(method(DELETE, getBuilder(getWebResource(fixUrl(url)))));
     }
 
     /**

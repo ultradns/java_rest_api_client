@@ -813,7 +813,7 @@ public class RestApiClient {
     public RestApiClient buildRestApiClientForSubAccountAccess(@NotNull String subAccountName) throws IOException {
         String url = SUB_ACCOUNTS + URLEncoder.encode(subAccountName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue())
                 .replaceAll("\\+", "%20") + TOKEN;
-        ClientData clientData = ultraRestClient.post(url);
+        ClientData clientData = ultraRestClient.retryablePost(url);
         checkClientData(clientData);
         TokenResponse subAccountTokenResponse = JsonUtils.jsonToObject(clientData.getBody(), TokenResponse.class);
         return buildRestApiClientWithTokens(subAccountTokenResponse.getAccessToken(), null,
