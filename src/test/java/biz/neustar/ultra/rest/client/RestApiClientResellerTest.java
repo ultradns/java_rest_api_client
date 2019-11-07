@@ -44,10 +44,6 @@ public class RestApiClientResellerTest extends AbstractBaseRestApiClientTest {
         accountName = accountList.getAccounts().get(0).getAccountName();
         assertNotNull(accountName);
         LOG.debug("accountName = " + accountName);
-
-        String result = REST_API_CLIENT.createPrimaryZone(accountName, zoneName);
-        assertNotNull(result);
-        LOG.debug("result = " + result);
     }
 
     @After
