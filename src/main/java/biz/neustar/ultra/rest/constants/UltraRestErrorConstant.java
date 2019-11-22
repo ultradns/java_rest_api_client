@@ -221,6 +221,10 @@ public enum UltraRestErrorConstant {
     SBTC_INVALID_PROBE_DETAILS(130012, "Given probe details is not valid."),
     SBTC_POOL_NOT_FOUND(130014, "Cannot find pool for the given owner."),
     SB_AGENT_NOT_VALID(130016, "Agent '%s' is not valid for account '%s'."),
+    SB_PROBE_INAVLID_EXPECTED_RESPONSE_VALUE(130017,
+            "Please enter a valid HTTP Response code value between 2XX and 3XX. If you selected the Advanced Option, "
+                    + "multiple HTTP codes must be valid and separated by a '|'."),
+    SB_PROBE_INVALID_EXPECTED_RESPONSE_RANGE(130018, "Please enter a valid HTTP Response code between 100 and 599."),
 
     INVALID_CONVERSION(150014, "Invalid conversion: Can not convert from '%s' to '%s'."),
     SB_TC_INVALID_RECORD_STATE_RUN_PROBE_ENABLED(150015,
@@ -447,7 +451,36 @@ public enum UltraRestErrorConstant {
             + "'%s' as per provided Fingerprint Type '%s'."),
 
     // Duplicate rdata error
-    DUPLICATE_VALUES_RRDATA_CODE(450001, "Resource Record with these attributes already exists in the system.");
+    DUPLICATE_VALUES_RRDATA_CODE(450001, "Resource Record with these attributes already exists in the system."),
+
+    // Null MX Record related errors
+    DIRECTIONAL_POOL_WITH_NULL_MX_NOT_ALLOWED(460001, "Directional pool with null MX record is not allowed."),
+    INVALID_INPUT_RRSET_NULL_MX(460002,
+            "Rdata cannot have additional records if Null MX record is specified in the input."),
+    NULL_MX_ALREADY_EXISTS(460003,
+            "Cannot add any further MX record or directional pool as domain already contains Null MX record."),
+    CANNOT_ADD_NULL_MX_WHEN_NORMAL_EXISTS(460004,
+            "Can not add null MX record as a normal MX record exists for this domain."),
+
+    // Account Service error
+    ACCOUNT_SERVICE_CONN_ISSUE(490001,
+            "Error while communicating with account service."),
+    ACCOUNT_SERVICE_RESPONSE_MAPPING_ISSUE(490002,
+            "Error while mapping the account service response to AccountInfoList."),
+    NO_PERMISSION_ON_SUB_ACCOUNTS_ERROR(490003, "You do not have permissions to perform any activity on sub-accounts"),
+    ONLY_SUB_ACCOUNTS_ALLOWED_ERROR(490004, "You can perform this activity on sub-accounts only"),
+    SUB_ACCOUNT_CANT_BE_LOCATED_ERROR(490005, "The sub-account '%s' cannot be located"),
+    SUB_ACCOUNT_SUSPENDED_ERROR(490006, "The sub-account '%s' is suspended"),
+    SUB_ACCOUNT_NOT_PROPERLY_SETUP_ERROR(490007,
+            "The account %s is not correctly configured in the system. Please contact UltraDNS customer support at +1"
+                    + " (844) NSR-CUST, +1-844-677-2878, +1 571-434-6700 or www.support.neustar."),
+    NO_SUB_ACCOUNTS_EXISTS(490004, "No sub accounts exists."),
+    ACCOUNTS_NOT_ON_ULTRA_FLASH_PIPELINE(490009,
+            "Operation is not supported for the provided source and target account combination."),
+    ZONE_EXISTS_IN_ANOTHER_ACCOUNT(1891, "Zone already exists in another UltraDNS customer account."),
+    ZONE_EXISTS_IN_CURRENT_ACCOUNT(1892, "Zone already exists in the account '%s'."),
+    ZONE_EXISTS_IN_ANOTHER_ACCOUNT_OF_SAME_SPONSOR(1893,
+            "Zone already exists in another account under the same sponsor.");
 
     /**
      * Error code.
