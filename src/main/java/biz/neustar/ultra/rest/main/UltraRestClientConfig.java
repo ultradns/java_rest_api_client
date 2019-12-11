@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import org.apache.http.HttpStatus;
 
+import java.net.UnknownHostException;
 import java.util.Set;
 
 /*
@@ -33,22 +34,29 @@ public class UltraRestClientConfig {
         private static final int MAX_RETRY_ATTEMPTS_ALLOWED = 3;
 
         private static final int MAX_RETRY_ATTEMPTS_DEFAULT = 3;
-        private static final int RETRY_SLEEP_INTERVAL_MILLIS = 2000;
+        private static final int INITIAL_INTERVAL_SECS = 2;
+        private static final int MAX_INTERVAL_SECS = 32;
 
         private static final Set<Integer> SUPPORTED_RETRY_STATUS_CODES = Sets.newHashSet(
                 HttpStatus.SC_INTERNAL_SERVER_ERROR, HttpStatus.SC_SERVICE_UNAVAILABLE, HttpStatus.SC_GATEWAY_TIMEOUT,
                 SC_TOO_MANY_REQUESTS);
 
+        private static final Set<Class<? extends Throwable>> DEFAULT_MUST_RETRY_ON_EXCEPTIONS = Sets.newHashSet(
+                UnknownHostException.class);
+
         private final int maxRetryAttempts;
         private final Set<Integer> retryOnStatusCodes;
-        private final int retrySleepIntervalInMillis;
+        private final Set<Class<? extends Throwable>> mustRetryOnExceptions;
+        private final int initialIntervalSecs;
+        private final int maxIntervalSecs;
 
         public RetryOptions() {
             this(MAX_RETRY_ATTEMPTS_DEFAULT, Sets.newHashSet(HttpStatus.SC_INTERNAL_SERVER_ERROR),
-                    RETRY_SLEEP_INTERVAL_MILLIS);
+                    DEFAULT_MUST_RETRY_ON_EXCEPTIONS, INITIAL_INTERVAL_SECS, MAX_INTERVAL_SECS);
         }
 
-        public RetryOptions(int maxRetryAttempts, Set<Integer> retryOnStatusCodes, int retrySleepIntervalInMillis) {
+        public RetryOptions(int maxRetryAttempts, Set<Integer> retryOnStatusCodes,
+                Set<Class<? extends Throwable>> mustRetryOnExceptions, int initialIntervalSecs, int maxIntervalSecs) {
             Preconditions.checkArgument(maxRetryAttempts <= MAX_RETRY_ATTEMPTS_ALLOWED,
                     "The maximum retry attempts cannot exceed " + MAX_RETRY_ATTEMPTS_ALLOWED);
             Preconditions.checkArgument(
@@ -58,7 +66,9 @@ public class UltraRestClientConfig {
                             + SUPPORTED_RETRY_STATUS_CODES);
             this.maxRetryAttempts = maxRetryAttempts;
             this.retryOnStatusCodes = retryOnStatusCodes;
-            this.retrySleepIntervalInMillis = retrySleepIntervalInMillis;
+            this.mustRetryOnExceptions = mustRetryOnExceptions;
+            this.initialIntervalSecs = initialIntervalSecs;
+            this.maxIntervalSecs = maxIntervalSecs;
         }
 
         public int getMaxRetryAttempts() {
@@ -69,8 +79,16 @@ public class UltraRestClientConfig {
             return retryOnStatusCodes;
         }
 
-        public int getRetrySleepIntervalInMillis() {
-            return retrySleepIntervalInMillis;
+        public Set<Class<? extends Throwable>> getMustRetryOnExceptions() {
+            return mustRetryOnExceptions;
+        }
+
+        public int getInitialIntervalSecs() {
+            return initialIntervalSecs;
+        }
+
+        public int getMaxIntervalSecs() {
+            return maxIntervalSecs;
         }
     }
 }

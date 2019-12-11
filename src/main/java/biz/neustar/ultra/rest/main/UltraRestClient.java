@@ -47,6 +47,7 @@ import java.util.function.Supplier;
  *         names and logos are registered trademarks, service marks or tradenames of NeuStar, Inc. All other product
  *         names, company names, marks, logos and symbols may be trademarks of their respective owners.
  */
+@SuppressWarnings("PMD.GodClass")
 public final class UltraRestClient {
 
     /**
@@ -82,12 +83,19 @@ public final class UltraRestClient {
         return baseUrl;
     }
 
-    private ClientResponse method(String method, WebResource.Builder builder) {
-        return method(method, builder, true);
+    private ClientResponse method(String method, Supplier<WebResource.Builder> webResourceBuilderSupplier) {
+        return retryableMethod(method, webResourceBuilderSupplier, false, true);
     }
 
-    private ClientResponse method(String method, WebResource.Builder builder, boolean tryRefresh) {
+    private ClientResponse retryableMethod(String method, Supplier<WebResource.Builder> webResourceBuilderSupplier) {
+        return retryableMethod(method, webResourceBuilderSupplier, true, true);
+    }
+
+    private ClientResponse method(String method, Supplier<WebResource.Builder> webResourceBuilderSupplier,
+            boolean tryRefresh) {
+        WebResource.Builder builder = webResourceBuilderSupplier.get();
         builder.header(ULTRA_CLIENT, CLIENT_IDENTIFIER);
+
         ClientResponse clientResponse = addAuth.addAuth(builder).method(method, ClientResponse.class);
         if (tryRefresh && (clientResponse.getClientResponseStatus().getStatusCode() == HttpStatus.SC_BAD_REQUEST
                 || clientResponse.getClientResponseStatus().getStatusCode() == HttpStatus.SC_UNAUTHORIZED)) {
@@ -101,36 +109,59 @@ public final class UltraRestClient {
         return clientResponse;
     }
 
-    private ClientResponse retryableMethod(String method, Supplier<WebResource.Builder> builderSupplier) {
-        ClientResponse clientResponse;
-        WebResource.Builder builder = builderSupplier.get();
-        builder.header(ULTRA_CLIENT, CLIENT_IDENTIFIER);
-
-        int retry = ultraRestClientConfig.getRetryOptions().getMaxRetryAttempts();
+    private ClientResponse retryableMethod(String method, Supplier<WebResource.Builder> webResourceBuilderSupplier,
+            boolean retry, boolean tryRefresh) {
+        ClientResponse clientResponse = null;
+        int remainingRetryAttempts = ultraRestClientConfig.getRetryOptions().getMaxRetryAttempts();
         do {
+            boolean exceptionRetry = false;
+            try {
+                clientResponse = method(method, webResourceBuilderSupplier, tryRefresh);
+            } catch (Exception e) {
+                exceptionRetry = isRetryableException(e);
+                if (!exceptionRetry) {
+                    throw e;
+                }
+            }
 
-            clientResponse = method(method, builder, true);
-            if (!ultraRestClientConfig.getRetryOptions()
-                    .getRetryOnStatusCodes()
-                    .contains(clientResponse.getClientResponseStatus().getStatusCode())) {
+            if (!exceptionRetry && (!retry || (retry && Optional.ofNullable(clientResponse)
+                    .map(ClientResponse::getClientResponseStatus)
+                    .map(ClientResponse.Status::getStatusCode)
+                    .map(statusCode -> !ultraRestClientConfig.getRetryOptions().getRetryOnStatusCodes()
+                            .contains(statusCode))
+                    .orElse(false)))) {
                 return clientResponse;
             }
 
-            if (retry > 0) {
-                clientResponse.close();
-                sleepBeforeRetry();
+            if (remainingRetryAttempts > 0) {
+                Optional.ofNullable(clientResponse).ifPresent(resp -> resp.close());
+                sleepBeforeRetry(remainingRetryAttempts);
             }
-            retry--;
-        } while (retry >= 0);
+            remainingRetryAttempts--;
+        } while (remainingRetryAttempts >= 0);
 
         return clientResponse;
     }
 
-    private void sleepBeforeRetry() {
+    private boolean isRetryableException(Exception e) {
+        for (Class<? extends Throwable> retryableClass : ultraRestClientConfig.getRetryOptions()
+                .getMustRetryOnExceptions()) {
+            if (retryableClass.isInstance(e) || (retryableClass.isInstance(e.getCause()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void sleepBeforeRetry(int remainingRetryAttempt) {
+        // delay retry exponentially with a maximum wait time of some secs.
+        long backoffSecs = (long) Math.pow(2,
+                (ultraRestClientConfig.getRetryOptions().getMaxRetryAttempts() - remainingRetryAttempt));
+        long sleepForSecs = Math.min(ultraRestClientConfig.getRetryOptions().getInitialIntervalSecs() + backoffSecs,
+                ultraRestClientConfig.getRetryOptions().getMaxIntervalSecs());
         try {
-            LOGGER.warn("Waiting for {} milliseconds before retry",
-                    ultraRestClientConfig.getRetryOptions().getRetrySleepIntervalInMillis());
-            TimeUnit.MILLISECONDS.sleep(ultraRestClientConfig.getRetryOptions().getRetrySleepIntervalInMillis());
+            LOGGER.warn("Waiting for {} seconds before retry", sleepForSecs);
+            TimeUnit.SECONDS.sleep(sleepForSecs);
         } catch (InterruptedException interruptedException) {
             // Nothing to do. Eat it.
         }
@@ -207,7 +238,7 @@ public final class UltraRestClient {
      */
     public ClientData post(String url, MultivaluedMap<String, String> queryParams, String jsonString) {
         LOGGER.debug("Executing POST request for " + baseUrl + url);
-        return toClientData(method(POST, getBuilder(getWebResource(fixUrl(url)).queryParams(
+        return toClientData(method(POST, () -> getBuilder(getWebResource(fixUrl(url)).queryParams(
                 Optional.ofNullable(queryParams).orElse(new MultivaluedMapImpl()))).entity(jsonString)));
     }
 
@@ -219,7 +250,7 @@ public final class UltraRestClient {
      */
     public ClientData post(final String url) {
         LOGGER.debug("Executing POST request for " + baseUrl + url);
-        return toClientData(method(POST, getBuilder(getWebResource(fixUrl(url)))));
+        return toClientData(method(POST, () -> getBuilder(getWebResource(fixUrl(url)))));
     }
 
     /**
@@ -244,7 +275,8 @@ public final class UltraRestClient {
 
     public ClientData post(String url, Form formData, boolean tryRefresh) {
         LOGGER.debug("Executing POST request for " + baseUrl + url);
-        return toClientData(method(POST, getBuilderForForm(getWebResource(fixUrl(url)), formData), tryRefresh));
+        return toClientData(retryableMethod(POST, () -> getBuilderForForm(getWebResource(fixUrl(url)), formData), false,
+                tryRefresh));
     }
 
     /**
@@ -258,7 +290,7 @@ public final class UltraRestClient {
         LOGGER.debug("Executing multipart POST request for " + baseUrl + url);
 
         WebResource webResource = getWebResource(fixUrl(url));
-        return toClientData(method(POST, getMultipartBuilder(webResource, formDataBodyParts)));
+        return toClientData(method(POST, () -> getMultipartBuilder(webResource, formDataBodyParts)));
     }
 
     /**
@@ -284,7 +316,7 @@ public final class UltraRestClient {
     public ClientData multipartFakePatch(final String url, FormDataBodyPart... formDataBodyParts) {
         LOGGER.debug("Executing multipart fake PATCH request for " + baseUrl + url);
         WebResource webResource = getWebResource(fixUrl(url)).queryParam("_method", PATCH);
-        return toClientData(method(POST, getMultipartBuilder(webResource, formDataBodyParts)));
+        return toClientData(method(POST, () -> getMultipartBuilder(webResource, formDataBodyParts)));
     }
 
     /**
@@ -295,7 +327,7 @@ public final class UltraRestClient {
      */
     public ClientData delete(final String url) {
         LOGGER.debug("Executing DELETE request for " + baseUrl + url);
-        return toClientData(method(DELETE, getBuilder(getWebResource(fixUrl(url)))));
+        return toClientData(method(DELETE, () -> getBuilder(getWebResource(fixUrl(url)))));
     }
 
     /**
@@ -329,7 +361,7 @@ public final class UltraRestClient {
     public ClientData fakePatch(final String url, final String jsonString) {
         LOGGER.debug("Executing PATCH request for " + baseUrl + url);
         WebResource webResource = getWebResource(fixUrl(url)).queryParam("_method", PATCH);
-        return toClientData(method(POST, getBuilder(webResource).entity(jsonString)));
+        return toClientData(method(POST, () -> getBuilder(webResource).entity(jsonString)));
     }
 
     /**
