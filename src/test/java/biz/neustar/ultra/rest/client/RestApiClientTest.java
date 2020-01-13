@@ -9,19 +9,23 @@ import biz.neustar.ultra.rest.client.exception.UltraClientException;
 import biz.neustar.ultra.rest.client.testutil.TaskUtil;
 import biz.neustar.ultra.rest.constants.UltraRestErrorConstant;
 import biz.neustar.ultra.rest.constants.UltraRestSharedConstant;
+import biz.neustar.ultra.rest.constants.ZoneType;
 import biz.neustar.ultra.rest.dto.AccountList;
 import biz.neustar.ultra.rest.dto.BatchRequest;
 import biz.neustar.ultra.rest.dto.BatchResponse;
 import biz.neustar.ultra.rest.dto.NameServer;
 import biz.neustar.ultra.rest.dto.NameServerIpList;
+import biz.neustar.ultra.rest.dto.PrimaryNameServers;
 import biz.neustar.ultra.rest.dto.RRSet;
 import biz.neustar.ultra.rest.dto.RRSetList;
+import biz.neustar.ultra.rest.dto.SecondaryZoneInfo;
 import biz.neustar.ultra.rest.dto.Status;
 import biz.neustar.ultra.rest.dto.Version;
 import biz.neustar.ultra.rest.dto.WebForward;
 import biz.neustar.ultra.rest.dto.WebForwardList;
 import biz.neustar.ultra.rest.dto.ZoneInfoList;
 import biz.neustar.ultra.rest.dto.ZoneOutInfo;
+import biz.neustar.ultra.rest.dto.ZoneProperties;
 import com.google.common.collect.Lists;
 import org.apache.commons.httpclient.HttpStatus;
 import org.junit.After;
@@ -182,6 +186,42 @@ public class RestApiClientTest extends AbstractBaseRestApiClientTest {
                 UltraRestSharedConstant.ZoneListSortType.NAME, true);
         assertNotNull(allZones);
         String firstZoneName = allZones.getZones().get(0).getProperties().getName();
+
+        REST_API_CLIENT.deleteZone(zoneName);
+    }
+
+    @Test
+    public void testSecondaryZoneCreationWithAllowUnresponsiveNS() throws IOException, InterruptedException {
+        // Test data
+        String zoneName = "secondarya" + (1 + (new Random()).nextInt(18)) + ".com";
+        ZoneProperties zoneProperties = new ZoneProperties(zoneName, accountName, ZoneType.SECONDARY, null, null, null);
+
+        // Secondary zone primary name server info
+        String ip1 = "107.21.211.150";
+        String tsigKey1 = null;
+        String tsigKeyValue1 = null;
+        String tsigAlgorithm1 = null;
+        String notificationEmailAddress = "foo@bar.com";
+        boolean isAllowUnresponsiveNS = true;
+
+        NameServer nameServerIp1 = new NameServer(ip1, tsigKey1, tsigKeyValue1, tsigAlgorithm1);
+        NameServer nameServerIp2 = null;
+        NameServer nameServerIp3 = null;
+        NameServerIpList nameServerIpList = new NameServerIpList(nameServerIp1, nameServerIp2, nameServerIp3);
+
+        SecondaryZoneInfo secondaryZoneInfo = new SecondaryZoneInfo(new PrimaryNameServers(nameServerIpList));
+        secondaryZoneInfo.setNotificationEmailAddress(notificationEmailAddress);
+        secondaryZoneInfo.setAllowUnresponsiveNS(isAllowUnresponsiveNS);
+
+        // Create the secondary zone
+        String taskId = REST_API_CLIENT.createSecondaryZone(zoneProperties, secondaryZoneInfo);
+        assertNotNull(taskId);
+
+        // Check the secondary zone creation task is finished successfully
+        TaskUtil.checkTaskCompletedSuccessfully(REST_API_CLIENT, 10, 10, taskId);
+
+        ZoneOutInfo zone = REST_API_CLIENT.getZoneMetadata(zoneName);
+        assertNotNull(zone);
 
         REST_API_CLIENT.deleteZone(zoneName);
     }
