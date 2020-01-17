@@ -25,11 +25,26 @@ public class BaseQueryList {
      */
     private ResultInfo resultInfo;
 
+    private CursorInfo cursorInfo;
     /**
      * Empty constructor.
      */
     public BaseQueryList() {
         super();
+    }
+
+    /**
+     * Parameterized constructor.
+     *
+     * @param queryInfo  - {@link QueryInfo}
+     * @param resultInfo - {@link ResultInfo}
+     * @param cursorInfo - {@link CursorInfo}
+     */
+    public BaseQueryList(QueryInfo queryInfo, ResultInfo resultInfo, CursorInfo cursorInfo) {
+        super();
+        this.queryInfo = queryInfo;
+        this.resultInfo = resultInfo;
+        this.cursorInfo = cursorInfo;
     }
 
     /**
@@ -60,6 +75,24 @@ public class BaseQueryList {
      */
     public final void setQueryInfo(QueryInfo queryInfo) {
         this.queryInfo = queryInfo;
+    }
+
+    /**
+     * Get cursor info.
+     *
+     * @return the cursorInfo
+     */
+    public final CursorInfo getCursorInfo() {
+        return cursorInfo;
+    }
+
+    /**
+     * Set cursor info.
+     *
+     * @param cursorInfo the cursorInfo to set
+     */
+    public final void setCursorInfo(CursorInfo cursorInfo) {
+        this.cursorInfo = cursorInfo;
     }
 
     /**

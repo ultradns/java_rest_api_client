@@ -16,13 +16,17 @@ import java.util.TreeSet;
 /**
  * Account DTO.
  */
-@JsonInclude(Include.NON_NULL)
+@JsonInclude(Include.NON_DEFAULT)
 @SuppressWarnings("PMD.TooManyFields")
 public class Account {
     /**
      * Name of the account.
      */
     private String accountName;
+    /**
+     * Name of the parent account.
+     */
+    private String parentAccountName;
     /**
      * Account Id of the account.
      */
@@ -178,6 +182,24 @@ public class Account {
      */
     public final void setAccountName(String accountName) {
         this.accountName = accountName;
+    }
+
+    /**
+     * Get parent account name.
+     *
+     * @return the parent account name
+     */
+    public String getParentAccountName() {
+        return parentAccountName;
+    }
+
+    /**
+     * Set parent account name.
+     *
+     * @param parentAccountName the parent account name
+     */
+    public void setParentAccountName(String parentAccountName) {
+        this.parentAccountName = parentAccountName;
     }
 
     /**

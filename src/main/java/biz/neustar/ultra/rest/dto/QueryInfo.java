@@ -37,6 +37,7 @@ public class QueryInfo implements Serializable {
      */
     private int limit;
 
+    private String cursor;
     /**
      * Empty constructor.
      */
@@ -58,6 +59,15 @@ public class QueryInfo implements Serializable {
         this.sort = sort;
         this.reverse = reverse;
         this.limit = limit;
+    }
+
+    public QueryInfo(String q, String sort, boolean reverse, int limit, String cursor) {
+        super();
+        this.q = q;
+        this.sort = sort;
+        this.reverse = reverse;
+        this.limit = limit;
+        this.cursor = cursor;
     }
 
     /**
@@ -132,6 +142,14 @@ public class QueryInfo implements Serializable {
         this.limit = limit;
     }
 
+    public String getCursor() {
+        return cursor;
+    }
+
+    public void setCursor(String cursor) {
+        this.cursor = cursor;
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -154,7 +172,7 @@ public class QueryInfo implements Serializable {
      */
     @Override
     public final int hashCode() {
-        return Objects.hashCode(getQ(), getSort(), isReverse(), getLimit());
+        return Objects.hashCode(getQ(), getSort(), isReverse(), getLimit(), getCursor());
     }
 
     /*
@@ -169,8 +187,9 @@ public class QueryInfo implements Serializable {
             return false;
         }
         final QueryInfo other = (QueryInfo) obj;
-        isEqual = Objects.equal(getQ(), other.getQ()) && Objects.equal(getSort(), other.getSort()) && Objects.equal(
-                isReverse(), other.isReverse()) && Objects.equal(getLimit(), other.getLimit());
+        isEqual = Objects.equal(getQ(), other.getQ()) && Objects.equal(getSort(), other.getSort())
+                && Objects.equal(isReverse(), other.isReverse()) && Objects.equal(getLimit(), other.getLimit())
+                && Objects.equal(getCursor(), other.getCursor());
         return isEqual;
     }
 

@@ -54,6 +54,18 @@ public class ZoneInfoList extends BaseQueryList {
         this.zones = zones;
     }
 
+    /**
+     * Parameterized constructor.
+     *
+     * @param zones      - Zones.
+     * @param queryInfo  - Query Info
+     * @param resultInfo - Result Info
+     */
+    public ZoneInfoList(List<ZoneOutInfo> zones, QueryInfo queryInfo, ResultInfo resultInfo, CursorInfo cursorInfo) {
+        super(queryInfo, resultInfo, cursorInfo);
+        this.zones = zones;
+    }
+
     public List<ZoneOutInfo> getZones() {
         return zones;
     }
