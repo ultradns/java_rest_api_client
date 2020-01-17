@@ -41,6 +41,9 @@ public class TransactionInfo {
      */
     private Boolean followRedirects;
 
+    /** The expected HTTP response for probe to be successful. */
+    private String expectedResponse;
+
     public TransactionInfo() {
         super();
     }
@@ -93,6 +96,14 @@ public class TransactionInfo {
 
     public void setFollowRedirects(Boolean followRedirects) {
         this.followRedirects = followRedirects;
+    }
+
+    public String getExpectedResponse() {
+        return expectedResponse;
+    }
+
+    public void setExpectedResponse(String expectedResponse) {
+        this.expectedResponse = expectedResponse;
     }
 
     public void setDefaultValue() {

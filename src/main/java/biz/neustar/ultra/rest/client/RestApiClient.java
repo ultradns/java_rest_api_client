@@ -70,6 +70,7 @@ public class RestApiClient {
     private static final String BATCH = "batch";
     private static final String SUB_ACCOUNTS = "subaccounts/";
     private static final String TOKEN = "/token";
+    private static final String V3 = "/v3/";
 
     private static final int BASE_10_RADIX = 10;
 
@@ -224,6 +225,24 @@ public class RestApiClient {
         MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
         String url = ACCOUNTS1 + URLEncoder.encode(accountName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue())
                 .replaceAll("\\+", "%20") + "/zones";
+        ClientData clientData = ultraRestClient.get(url, queryParams);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), ZoneInfoList.class);
+    }
+
+    /**
+     * List zones using cursor.
+     *
+     * @param q      - name – The name of the zone to return (allows for partial string matches)
+     * @param cursor - Returned after the initial List Zones request. Use with the cursorInfo details for fetching the
+     *               next or previous page(s).
+     * @param limit  - The maximum number of rows requested. If not provided, the default value is 100.
+     * @return - {@link ZoneInfoList}
+     * @throws IOException - {@link IOException}
+     */
+    public ZoneInfoList getZoneListByCursor(String q, String cursor, int limit) throws IOException {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, null, limit, null, null, cursor);
+        String url = V3 + ZONES;
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), ZoneInfoList.class);
@@ -684,6 +703,14 @@ public class RestApiClient {
         Optional.ofNullable(limit).ifPresent(l -> queryParams.add("limit", Integer.toString(l, BASE_10_RADIX)));
         Optional.ofNullable(sort).ifPresent(s -> queryParams.add("sort", sort.toString()));
         Optional.ofNullable(reverse).ifPresent(r -> queryParams.add("reverse", Boolean.toString(reverse)));
+
+        return queryParams;
+    }
+
+    private MultivaluedMap<String, String> buildQueryParams(String q, Integer offset, Integer limit, Enum sort,
+            Boolean reverse, String cursor) {
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
+        Optional.ofNullable(cursor).ifPresent(c -> queryParams.add("cursor", cursor));
 
         return queryParams;
     }

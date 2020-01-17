@@ -30,6 +30,7 @@ public class DnsSecKey {
     private String nextRoll;
     private Integer keyId;
     private String publicKey;
+    private String dnsKeyData;
     private List<String> dsRecords;
 
     public DnsSecKey() {
@@ -110,6 +111,14 @@ public class DnsSecKey {
 
     public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
+    }
+
+    public String getDnsKeyData() {
+        return dnsKeyData;
+    }
+
+    public void setDnsKeyData(String dnsKeyData) {
+        this.dnsKeyData = dnsKeyData;
     }
 
     public List<String> getDsRecords() {

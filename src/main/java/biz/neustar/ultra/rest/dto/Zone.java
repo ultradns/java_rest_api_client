@@ -5,6 +5,7 @@
  */
 package biz.neustar.ultra.rest.dto;
 
+import biz.neustar.ultra.rest.constants.ZoneType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
@@ -35,6 +36,8 @@ public class Zone {
     private SecondaryZoneInfo secondaryZoneInfo;
 
     private AliasZoneInfo aliasZoneInfo;
+
+    private ZoneType targetZoneType;
 
     /**
      * Empty constructor.
@@ -145,6 +148,7 @@ public class Zone {
                 .add("primaryCreateInfo", getPrimaryCreateInfo())
                 .add("secondaryCreateInfo", getSecondaryCreateInfo())
                 .add("aliasCreateInfo", getAliasCreateInfo())
+                .add("targetZoneType", getTargetZoneType())
                 .toString();
     }
 
@@ -202,5 +206,13 @@ public class Zone {
 
     public final void setAliasZoneInfo(AliasZoneInfo aliasZoneInfo) {
         this.aliasZoneInfo = aliasZoneInfo;
+    }
+
+    public ZoneType getTargetZoneType() {
+        return targetZoneType;
+    }
+
+    public void setTargetZoneType(ZoneType targetZoneType) {
+        this.targetZoneType = targetZoneType;
     }
 }

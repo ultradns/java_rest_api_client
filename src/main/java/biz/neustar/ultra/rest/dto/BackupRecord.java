@@ -33,6 +33,15 @@ public class BackupRecord {
      * detecting that the pool record has failed before activating primary records.
      */
     private Integer failoverDelay;
+    /**
+     * The record type for the backup record.
+     */
+    private String type;
+
+    /**
+     * Alive (available to serve) or dead?
+     */
+    private Boolean availableToServe;
 
     public BackupRecord() {
         super();
@@ -80,6 +89,42 @@ public class BackupRecord {
         this.failoverDelay = failoverDelay;
     }
 
+    /**
+     * Get record type.
+     *
+     * @return type the record type
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Set record type.
+     *
+     * @param type type the record type to set
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /**
+     * Get availableToServe.
+     *
+     * @return availableToServe the availableToServe value
+     */
+    public Boolean isAvailableToServe() {
+        return availableToServe;
+    }
+
+    /**
+     * Set availableToServe.
+     *
+     * @param availableToServe the availableToServe value to set
+     */
+    public void setAvailableToServe(Boolean availableToServe) {
+        this.availableToServe = availableToServe;
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -90,6 +135,8 @@ public class BackupRecord {
         return MoreObjects.toStringHelper(this)
                 .add("failoverDelay", getFailoverDelay())
                 .add("rdata", getRdata())
+                .add("type", getType())
+                .add("availableToServe", isAvailableToServe())
                 .toString();
 
     }
@@ -101,7 +148,7 @@ public class BackupRecord {
      */
     @Override
     public final int hashCode() {
-        return Objects.hashCode(getFailoverDelay(), getRdata());
+        return Objects.hashCode(getFailoverDelay(), getRdata(), getType(), isAvailableToServe());
     }
 
     /*
@@ -116,8 +163,9 @@ public class BackupRecord {
             return false;
         }
         final BackupRecord other = (BackupRecord) obj;
-        isEqual = Objects.equal(getFailoverDelay(), other.getFailoverDelay()) && Objects.equal(getRdata(),
-                other.getRdata());
+        isEqual = Objects.equal(getFailoverDelay(), other.getFailoverDelay())
+                && Objects.equal(getRdata(), other.getRdata()) && Objects.equal(getType(), other.getType())
+                && Objects.equal(isAvailableToServe(), other.isAvailableToServe());
         return isEqual;
     }
 

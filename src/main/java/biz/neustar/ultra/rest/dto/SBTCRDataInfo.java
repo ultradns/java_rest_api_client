@@ -45,6 +45,10 @@ public class SBTCRDataInfo {
      * The record type for this pool record.
      */
     private String type;
+    /**
+     * The status of record.
+     */
+    private String status;
 
     public SBTCRDataInfo() {
         super();
@@ -206,9 +210,28 @@ public class SBTCRDataInfo {
         this.type = type;
     }
 
+    /**
+     * Get the status of record.
+     *
+     * @return status the record status
+     */
+    public String getStatus() {
+        return status;
+    }
+
+    /**
+     * Set the status of record.
+     *
+     * @param status the record status value to set
+     */
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(availableToServe, failoverDelay, priority, runProbes, state, threshold, weight, type);
+        return Objects.hash(availableToServe, failoverDelay, priority, runProbes, state, threshold, weight, type,
+                status);
     };
 
     @Override
@@ -224,7 +247,7 @@ public class SBTCRDataInfo {
                 && Objects.equals(failoverDelay, that.failoverDelay) && Objects.equals(priority, that.priority)
                 && Objects.equals(runProbes, that.runProbes) && Objects.equals(state, that.state)
                 && Objects.equals(threshold, that.threshold) && Objects.equals(weight, that.weight)
-                && Objects.equals(type, that.type);
+                && Objects.equals(type, that.type) && Objects.equals(status, that.status);
     }
 
 
@@ -244,6 +267,7 @@ public class SBTCRDataInfo {
                 .add("runProbes", isRunProbes())
                 .add("availableToServe", isAvailableToServe())
                 .add("type", getType())
+                .add("status", getStatus())
                 .toString();
 
     }
