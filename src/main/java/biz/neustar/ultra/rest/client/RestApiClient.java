@@ -8,6 +8,7 @@ import biz.neustar.ultra.rest.dto.AlertDataList;
 import biz.neustar.ultra.rest.dto.BatchRequest;
 import biz.neustar.ultra.rest.dto.BatchResponse;
 import biz.neustar.ultra.rest.dto.CreateType;
+import biz.neustar.ultra.rest.dto.DnsSecInfo;
 import biz.neustar.ultra.rest.dto.NameServerIpList;
 import biz.neustar.ultra.rest.dto.PrimaryNameServers;
 import biz.neustar.ultra.rest.dto.PrimaryZoneInfo;
@@ -51,7 +52,10 @@ import static biz.neustar.ultra.rest.client.exception.UltraClientErrors.checkCli
  * logos and symbols may be trademarks of their respective owners.
  */
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({
+                          "PMD.TooManyMethods",
+                          "PMD.ExcessivePublicCount"
+                  })
 public class RestApiClient {
     public static final String ACCOUNTS = "accounts";
     public static final String VERSION = "version";
@@ -70,6 +74,7 @@ public class RestApiClient {
     private static final String BATCH = "batch";
     private static final String SUB_ACCOUNTS = "subaccounts/";
     private static final String TOKEN = "/token";
+    private static final String DNSSEC = "/dnssec";
     private static final String V3 = "/v3/";
 
     private static final int BASE_10_RADIX = 10;
@@ -167,7 +172,7 @@ public class RestApiClient {
         String url = ZONES;
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(zone));
         checkClientData(clientData);
-        return clientData.getHeaders().getFirst("X-Task-Id");
+        return clientData.getHeaders().getFirst(UltraRestSharedConstant.X_NEUSTAR_TASK_ID.getValue());
     }
 
     /**
@@ -828,7 +833,7 @@ public class RestApiClient {
         queryParams.add("async", "true");
         ClientData clientData = ultraRestClient.post(url, queryParams, JsonUtils.objectToJson(batchRequests));
         checkClientData(clientData);
-        return clientData.getHeaders().getFirst("X-Task-Id");
+        return clientData.getHeaders().getFirst(UltraRestSharedConstant.X_NEUSTAR_TASK_ID.getValue());
     }
 
     /**
@@ -891,5 +896,68 @@ public class RestApiClient {
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), AccountList.class);
+    }
+
+    /**
+     * Sign a zone.
+     *
+     * @param zoneName - The name of the zone. The trailing . is optional.
+     * @return - Either the task id of the created background task or the status message.
+     * @throws IOException - {@link IOException}
+     */
+    public String signZone(@NotNull final String zoneName) throws IOException {
+
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + DNSSEC;
+        ClientData clientData = ultraRestClient.post(url);
+        checkClientData(clientData);
+        return Optional.ofNullable(
+                clientData.getHeaders().getFirst(UltraRestSharedConstant.X_NEUSTAR_TASK_ID.getValue()))
+                .orElse(clientData.getBody());
+    }
+
+    /**
+     * Unsign a zone.
+     *
+     * @param zoneName - The name of the zone. The trailing . is optional.
+     * @return - Either the task id of the created background task or the status message.
+     * @throws IOException - {@link IOException}
+     */
+    public String unsignZone(@NotNull final String zoneName) throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + DNSSEC;
+        ClientData clientData = ultraRestClient.delete(url);
+        return Optional.ofNullable(
+                clientData.getHeaders().getFirst(UltraRestSharedConstant.X_NEUSTAR_TASK_ID.getValue()))
+                .orElse(clientData.getBody());
+    }
+
+    /**
+     * Re-sign a zone.
+     *
+     * @param zoneName - The name of the zone. The trailing . is optional.
+     * @return - Either the task id of the created background task or the status message.
+     * @throws IOException - {@link IOException}
+     */
+    public String reSignZone(@NotNull final String zoneName) throws IOException {
+
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + DNSSEC;
+        ClientData clientData = ultraRestClient.put(url, null);
+        checkClientData(clientData);
+        return Optional.ofNullable(
+                clientData.getHeaders().getFirst(UltraRestSharedConstant.X_NEUSTAR_TASK_ID.getValue()))
+                .orElse(clientData.getBody());
+    }
+
+    /**
+     * Get DnsSec info of a signed zone.
+     *
+     * @param zoneName - The name of the zone. The trailing . is optional.
+     * @return - {@link DnsSecInfo}
+     * @throws IOException - {@link IOException}
+     */
+    public DnsSecInfo getDnsSecInfo(@NotNull final String zoneName) throws IOException {
+        String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + DNSSEC;
+        ClientData clientData = ultraRestClient.get(url);
+        checkClientData(clientData);
+        return JsonUtils.jsonToObject(clientData.getBody(), DnsSecInfo.class);
     }
 }
