@@ -1027,7 +1027,9 @@ public enum UltraRestSharedConstant {
     }
 
     public enum CursorOperation {
+        FIRST,
         NEXT,
-        PREVIOUS
+        PREVIOUS,
+        LAST
     }
 }
