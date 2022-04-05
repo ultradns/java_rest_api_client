@@ -156,7 +156,7 @@ public class RestApiClientTest extends AbstractBaseRestApiClientTest {
         String zoneName = "secondarya" + (1 + (new Random()).nextInt(18)) + ".com";
 
         // Secondary zone primary name server info
-        String ip1 = "107.21.211.150";
+        String ip1 = "e2e-bind-useast1a01-01.dev.ultradns.net";
         String tsigKey1 = null;
         String tsigKeyValue1 = null;
         String tsigAlgorithm1 = null;
@@ -197,7 +197,7 @@ public class RestApiClientTest extends AbstractBaseRestApiClientTest {
         ZoneProperties zoneProperties = new ZoneProperties(zoneName, accountName, ZoneType.SECONDARY, null, null, null);
 
         // Secondary zone primary name server info
-        String ip1 = "107.21.211.150";
+        String ip1 = "e2e-bind-useast1a01-01.dev.ultradns.net";
         String tsigKey1 = null;
         String tsigKeyValue1 = null;
         String tsigAlgorithm1 = null;

@@ -60,7 +60,7 @@ public class RestApiClientBasicSecondaryTest extends AbstractBaseRestApiClientTe
 
     private void createSecondaryZone(String zoneName) throws IOException, InterruptedException {
         // Secondary zone primary name server info
-        String ip1 = "107.21.211.150";
+        String ip1 = "e2e-bind-useast1a01-01.dev.ultradns.net";
         String tsigKey1 = null;
         String tsigKeyValue1 = null;
         String tsigAlgorithm1 = null;
@@ -132,8 +132,14 @@ public class RestApiClientBasicSecondaryTest extends AbstractBaseRestApiClientTe
     }
  
     @Test
-    public void testGetZoneListCursorForAnAccount() throws IOException {
-        // Input parameters
+    public void testGetZoneListCursorForAnAccount() throws IOException, InterruptedException {
+        // Test data - create multiple secondary zones
+        for (int index = 20; index <= 24; index++) {
+            String zoneName = "secondarya" + index + ".com";
+            createSecondaryZone(zoneName);
+        }
+
+    	// Input parameters
         String q = "account_name:"+ accountName;
         String cursor = null;
         int limit = 2;
