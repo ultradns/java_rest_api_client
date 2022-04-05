@@ -7,6 +7,7 @@ package biz.neustar.ultra.rest.client;
 
 import biz.neustar.ultra.rest.client.exception.UltraClientException;
 import biz.neustar.ultra.rest.client.testutil.TaskUtil;
+import biz.neustar.ultra.rest.constants.UltraRestErrorConstant;
 import biz.neustar.ultra.rest.dto.AccountList;
 import biz.neustar.ultra.rest.dto.NameServer;
 import biz.neustar.ultra.rest.dto.NameServerIpList;
@@ -24,8 +25,10 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class RestApiClientBasicSecondaryTest extends AbstractBaseRestApiClientTest {
 
@@ -57,7 +60,7 @@ public class RestApiClientBasicSecondaryTest extends AbstractBaseRestApiClientTe
 
     private void createSecondaryZone(String zoneName) throws IOException, InterruptedException {
         // Secondary zone primary name server info
-        String ip1 = "107.21.211.150";
+        String ip1 = "e2e-bind-useast1a01-01.dev.ultradns.net";
         String tsigKey1 = null;
         String tsigKeyValue1 = null;
         String tsigAlgorithm1 = null;
@@ -126,5 +129,92 @@ public class RestApiClientBasicSecondaryTest extends AbstractBaseRestApiClientTe
         assertNotNull(zoneInfoList.getCursorInfo());
         assertNotNull(zoneInfoList.getCursorInfo().getNext());
         assertNull(zoneInfoList.getCursorInfo().getPrevious());
+    }
+ 
+    @Test
+    public void testGetZoneListCursorForAnAccount() throws IOException, InterruptedException {
+        // Test data - create multiple secondary zones
+        for (int index = 20; index <= 24; index++) {
+            String zoneName = "secondarya" + index + ".com";
+            createSecondaryZone(zoneName);
+        }
+
+    	// Input parameters
+        String q = "account_name:"+ accountName;
+        String cursor = null;
+        int limit = 2;
+
+        ZoneInfoList zoneInfoList =  REST_API_CLIENT.getZoneListByCursor(q, cursor, limit);
+        assertNotNull(zoneInfoList);
+        assertNotNull(zoneInfoList.getZones());
+        assertEquals(2, zoneInfoList.getZones().size());
+        assertNotNull(zoneInfoList.getCursorInfo());
+        assertNotNull(zoneInfoList.getCursorInfo().getNext());
+        assertNull(zoneInfoList.getCursorInfo().getPrevious());
+        assertNotNull(zoneInfoList.getCursorInfo().getLast());
+        assertNull(zoneInfoList.getCursorInfo().getFirst());
+
+        // Fetch the next set of zones using cursor from previous response
+        cursor = zoneInfoList.getCursorInfo().getNext();
+        zoneInfoList = REST_API_CLIENT.getZoneListByCursor(q, cursor, limit);
+        assertNotNull(zoneInfoList);
+        assertNotNull(zoneInfoList.getZones());
+        assertEquals(2, zoneInfoList.getZones().size());
+        assertNotNull(zoneInfoList.getCursorInfo());
+        assertNotNull(zoneInfoList.getCursorInfo().getPrevious());
+        assertNotNull(zoneInfoList.getCursorInfo().getNext());
+        assertNotNull(zoneInfoList.getCursorInfo().getLast());
+        assertNotNull(zoneInfoList.getCursorInfo().getFirst());
+
+        // Fetch the previous set of zones using cursor from response
+        cursor = zoneInfoList.getCursorInfo().getPrevious();
+        zoneInfoList = REST_API_CLIENT.getZoneListByCursor(q, cursor, limit);
+        assertNotNull(zoneInfoList);
+        assertNotNull(zoneInfoList.getZones());
+        assertEquals(2, zoneInfoList.getZones().size());
+        assertNotNull(zoneInfoList.getCursorInfo());
+        assertNotNull(zoneInfoList.getCursorInfo().getNext());
+        assertNull(zoneInfoList.getCursorInfo().getPrevious());
+        assertNotNull(zoneInfoList.getCursorInfo().getLast());
+        assertNull(zoneInfoList.getCursorInfo().getFirst());
+
+        // Fetch the last set of zones using cursor from response
+        cursor = zoneInfoList.getCursorInfo().getLast();
+        zoneInfoList = REST_API_CLIENT.getZoneListByCursor(q, cursor, limit);
+        assertNotNull(zoneInfoList);
+        assertNotNull(zoneInfoList.getZones());
+        assertEquals(2, zoneInfoList.getZones().size());
+        assertNotNull(zoneInfoList.getCursorInfo());
+        assertNull(zoneInfoList.getCursorInfo().getNext());
+        assertNotNull(zoneInfoList.getCursorInfo().getPrevious());
+        assertNull(zoneInfoList.getCursorInfo().getLast());
+        assertNotNull(zoneInfoList.getCursorInfo().getFirst());
+
+        // Fetch the first set of zones using cursor from response
+        cursor = zoneInfoList.getCursorInfo().getFirst();
+        zoneInfoList = REST_API_CLIENT.getZoneListByCursor(q, cursor, limit);
+        assertNotNull(zoneInfoList);
+        assertNotNull(zoneInfoList.getZones());
+        assertEquals(2, zoneInfoList.getZones().size());
+        assertNotNull(zoneInfoList.getCursorInfo());
+        assertNotNull(zoneInfoList.getCursorInfo().getNext());
+        assertNull(zoneInfoList.getCursorInfo().getPrevious());
+        assertNotNull(zoneInfoList.getCursorInfo().getLast());
+        assertNull(zoneInfoList.getCursorInfo().getFirst());
+    }
+ 
+    @Test
+    public void testGetZoneListCursorWithInvalidQ() throws IOException {
+         try {
+            REST_API_CLIENT.getZoneListByCursor("accountname:"+ accountName, null, 5);
+            fail("Expecting an exception");
+        } catch (UltraClientException e) {
+            assertEquals(400, e.getStatus());
+            assertFalse(e.getErrors().isEmpty());
+            assertEquals(1, e.getErrors().size());
+            assertEquals(UltraRestErrorConstant.INVALID_INPUT.getErrorCode(), e.getErrors().get(0).getErrorCode());
+            assertEquals(UltraRestErrorConstant.INVALID_INPUT.getErrorMessage() + "q.accountname",
+                    e.getErrors().get(0).getErrorMessage());
+        }
     }
 }

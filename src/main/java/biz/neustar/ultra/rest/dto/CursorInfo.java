@@ -22,6 +22,12 @@ public class CursorInfo {
 
     private String previous;
 
+    private String first;
+
+    private String last;
+
+    private Integer totalCount;
+
     public String getNext() {
         return next;
     }
@@ -38,14 +44,47 @@ public class CursorInfo {
         this.previous = previous;
     }
 
-    public CursorInfo(String next, String previous) {
+    public Integer getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(Integer totalCount) {
+        this.totalCount = totalCount;
+    }
+
+    public String getFirst() {
+        return first;
+    }
+
+    public void setFirst(String first) {
+        this.first = first;
+    }
+
+    public String getLast() {
+        return last;
+    }
+
+    public void setLast(String last) {
+        this.last = last;
+    }
+
+    public CursorInfo(String next, String previous, Integer totalCount) {
         super();
         this.next = next;
         this.previous = previous;
+        this.totalCount = totalCount;
     }
 
     public CursorInfo() {
         super();
+    }
+
+    public CursorInfo(String next, String previous, String first, String last) {
+        super();
+        this.next = next;
+        this.previous = previous;
+        this.first = first;
+        this.last = last;
     }
 
     @Override
@@ -53,12 +92,15 @@ public class CursorInfo {
         return MoreObjects.toStringHelper(this)
                 .add("next", getNext())
                 .add("previous", getPrevious())
+                .add("first", getFirst())
+                .add("last", getLast())
+                .add("totalCount", getTotalCount())
                 .toString();
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hashCode(getNext(), getPrevious());
+        return Objects.hashCode(getNext(), getPrevious(), getTotalCount(), getFirst(), getLast());
     }
 
     @Override
@@ -68,7 +110,11 @@ public class CursorInfo {
             return false;
         }
         final CursorInfo other = (CursorInfo) obj;
-        isEqual = Objects.equal(getNext(), other.getNext()) && Objects.equal(getPrevious(), other.getPrevious());
+        isEqual = Objects.equal(getNext(), other.getNext())
+                && Objects.equal(getPrevious(), other.getPrevious())
+                && Objects.equal(getTotalCount(), other.getTotalCount())
+                && Objects.equal(getFirst(), other.getFirst())
+                && Objects.equal(getLast(), other.getLast());
         return isEqual;
     }
 }
