@@ -171,7 +171,7 @@ public class RestApiClient {
         String url = ZONES;
         ClientData clientData = ultraRestClient.post(url, JsonUtils.objectToJson(zone));
         UltraClientErrors.checkClientData(clientData);
-        return clientData.getHeaders().getFirst(UltraRestSharedConstant.X_NEUSTAR_TASK_ID.getValue());
+        return clientData.getHeaders().getFirst(UltraRestSharedConstant.X_TASK_ID.getValue());
     }
 
     /**
@@ -842,7 +842,7 @@ public class RestApiClient {
         queryParams.add("async", "true");
         ClientData clientData = ultraRestClient.post(url, queryParams, JsonUtils.objectToJson(batchRequests));
         UltraClientErrors.checkClientData(clientData);
-        return clientData.getHeaders().getFirst(UltraRestSharedConstant.X_NEUSTAR_TASK_ID.getValue());
+        return clientData.getHeaders().getFirst(UltraRestSharedConstant.X_TASK_ID.getValue());
     }
 
     /**
@@ -920,7 +920,7 @@ public class RestApiClient {
         ClientData clientData = ultraRestClient.post(url);
         UltraClientErrors.checkClientData(clientData);
         return Optional.ofNullable(
-                clientData.getHeaders().getFirst(UltraRestSharedConstant.X_NEUSTAR_TASK_ID.getValue()))
+                clientData.getHeaders().getFirst(UltraRestSharedConstant.X_TASK_ID.getValue()))
                 .orElse(clientData.getBody());
     }
 
@@ -935,7 +935,7 @@ public class RestApiClient {
         String url = ZONES + URLEncoder.encode(zoneName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue()) + DNSSEC;
         ClientData clientData = ultraRestClient.delete(url);
         return Optional.ofNullable(
-                clientData.getHeaders().getFirst(UltraRestSharedConstant.X_NEUSTAR_TASK_ID.getValue()))
+                clientData.getHeaders().getFirst(UltraRestSharedConstant.X_TASK_ID.getValue()))
                 .orElse(clientData.getBody());
     }
 
@@ -952,7 +952,7 @@ public class RestApiClient {
         ClientData clientData = ultraRestClient.put(url, null);
         UltraClientErrors.checkClientData(clientData);
         return Optional.ofNullable(
-                clientData.getHeaders().getFirst(UltraRestSharedConstant.X_NEUSTAR_TASK_ID.getValue()))
+                clientData.getHeaders().getFirst(UltraRestSharedConstant.X_TASK_ID.getValue()))
                 .orElse(clientData.getBody());
     }
 

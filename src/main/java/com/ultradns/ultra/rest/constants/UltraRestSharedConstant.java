@@ -15,7 +15,7 @@ public enum UltraRestSharedConstant {
     /**
      * header key while returning the task id in HTTP header.
      */
-    X_NEUSTAR_TASK_ID("X-Task-Id"),
+    X_TASK_ID("X-Task-Id"),
     /**
      * Zone type in query string.
      */
