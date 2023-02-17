@@ -13,7 +13,6 @@ import com.google.common.base.Objects;
 /**
  * Namer Server IP list.
  *
- * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class NameServerIpList {

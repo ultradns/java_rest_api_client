@@ -14,7 +14,6 @@ import java.util.List;
 /**
  * Mail Forward List.
  *
- * @author kushalraj.bhandari
  */
 @JsonInclude(Include.NON_NULL)
 public class MailForwardList extends BaseQueryList {

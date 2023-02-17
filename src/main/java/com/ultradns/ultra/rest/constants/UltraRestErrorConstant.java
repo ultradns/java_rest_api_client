@@ -7,8 +7,6 @@ package com.ultradns.ultra.rest.constants;
 
 /**
  * Ultra Rest Error.
- *
- * @author nupadhyay
  */
 public enum UltraRestErrorConstant {
 

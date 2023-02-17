@@ -14,7 +14,6 @@ import java.util.List;
 /**
  * Restrict IP List.
  *
- * @author kushalraj.bhandari
  */
 @JsonInclude(Include.NON_NULL)
 public class RestrictIPList {

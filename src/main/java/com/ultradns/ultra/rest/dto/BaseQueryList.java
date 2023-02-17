@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 /**
  * Base Query List.
  *
- * @author kushalraj.bhandari
  */
 @JsonInclude(Include.NON_NULL)
 public class BaseQueryList {

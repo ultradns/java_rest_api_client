@@ -14,7 +14,6 @@ import com.google.common.base.Objects;
 /**
  * Secondary zone info.
  *
- * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class SecondaryZoneInfo {

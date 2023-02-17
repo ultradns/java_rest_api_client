@@ -7,11 +7,6 @@
  */
 package com.ultradns.ultra.rest.dto;
 
-/*
- * @author vpavlyuk
- * @date 2/12/2015
- * @time 3:28 PM
- */
 public enum LabsEnum {
 
     AGARI("AGARI"),

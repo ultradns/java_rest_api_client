@@ -13,7 +13,6 @@ import com.google.common.base.Objects;
 /**
  * SB Agent Dto.
  *
- * @author vpavlyuk
  */
 @JsonInclude(Include.NON_NULL)
 public class SBAgent {

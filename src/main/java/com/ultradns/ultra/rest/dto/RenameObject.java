@@ -3,9 +3,6 @@ package com.ultradns.ultra.rest.dto;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
-/**
- * Created by kbhandari on 31/08/16.
- */
 public class RenameObject {
 
     private String oldName;

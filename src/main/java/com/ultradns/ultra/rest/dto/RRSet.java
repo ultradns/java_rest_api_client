@@ -19,7 +19,6 @@ import java.util.Map;
 /**
  * RR Set.
  *
- * @author nupadhyay
  */
 @JsonInclude(Include.NON_DEFAULT)
 public class RRSet implements Serializable {
@@ -329,7 +328,6 @@ public class RRSet implements Serializable {
     /**
      * RRSIG information for the RRSet.
      *
-     * @author nupadhyay
      */
     public static class RRSigs implements Serializable {
 

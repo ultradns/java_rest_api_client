@@ -14,9 +14,6 @@ import com.google.common.base.Objects;
 /**
  * Address DTO.
  *
- * @author vpavlyuk
- * @date 4/21/15
- * @time 3:49 PM
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Address {

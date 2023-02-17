@@ -15,7 +15,6 @@ import java.util.Map;
 /**
  * Task request to create background task.
  *
- * @author Girish Mahajan
  */
 @JsonInclude(Include.NON_NULL)
 public class TaskRequest {

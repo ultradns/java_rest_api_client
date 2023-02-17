@@ -7,8 +7,6 @@ package com.ultradns.ultra.rest.constants;
 
 /**
  * Ultra rest shared constant.
- *
- * @author nupadhyay
  */
 @SuppressWarnings("PMD.GodClass")
 public enum UltraRestSharedConstant {

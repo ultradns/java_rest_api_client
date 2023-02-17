@@ -12,9 +12,6 @@ import java.io.IOException;
 import java.util.List;
 
 /*
- * User: kbhandar
- * Date: 2019-07-30
- *
  * Copyright 2023 Vercara LLC. All rights reserved.
  * Vercara, the Vercara logo and related names and logos are registered
  * trademarks, service marks or tradenames of Vercara LLC. All other

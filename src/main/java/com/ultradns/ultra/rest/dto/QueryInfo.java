@@ -15,7 +15,6 @@ import java.io.Serializable;
 /**
  * Query Info.
  *
- * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class QueryInfo implements Serializable {

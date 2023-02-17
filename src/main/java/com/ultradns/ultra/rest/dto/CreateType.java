@@ -8,7 +8,6 @@ package com.ultradns.ultra.rest.dto;
 /**
  * Create type for zone.
  *
- * @author nupadhyay
  */
 public enum CreateType {
     NEW,

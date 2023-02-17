@@ -11,7 +11,6 @@ import java.util.List;
 /**
  * Account Level IP Group list dto.
  *
- * @author ankitm.agarwal
  */
 
 @JsonInclude(Include.NON_NULL)

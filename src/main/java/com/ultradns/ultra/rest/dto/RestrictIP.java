@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 /**
  * Restrict IP.
  *
- * @author kushalraj.bhandari
  */
 @JsonInclude(Include.NON_NULL)
 @SuppressWarnings("PMD.CyclomaticComplexity") //complaining about equals and hashCode

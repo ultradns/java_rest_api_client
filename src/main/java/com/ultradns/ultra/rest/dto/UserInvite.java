@@ -10,12 +10,6 @@ package com.ultradns.ultra.rest.dto;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
-/*
- * @author vpavlyuk
- * @date 4/8/15
- * @time 1:02 PM
- *
- */
 public class UserInvite {
 
     /**

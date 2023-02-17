@@ -17,7 +17,6 @@ import java.util.List;
 /**
  * RRSetList.
  *
- * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class RRSetList implements Serializable {

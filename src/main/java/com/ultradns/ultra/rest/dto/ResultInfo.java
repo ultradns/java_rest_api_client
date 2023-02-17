@@ -15,7 +15,6 @@ import java.io.Serializable;
 /**
  * Result Info.
  *
- * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class ResultInfo implements Serializable {

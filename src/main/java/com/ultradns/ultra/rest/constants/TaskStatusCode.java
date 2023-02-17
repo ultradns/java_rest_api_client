@@ -7,8 +7,6 @@ import com.ultradns.ultra.rest.dto.TaskStatusInfo;
 
 /**
  * Task Status Code.
- *
- * @author kushalraj.bhandari
  */
 public enum TaskStatusCode {
     PENDING(TaskStatusInfo.Code.PENDING),

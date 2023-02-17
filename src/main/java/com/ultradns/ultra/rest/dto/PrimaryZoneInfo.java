@@ -13,7 +13,6 @@ import java.util.List;
 /**
  * Primary Zone Info.
  *
- * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 @SuppressWarnings("PMD.CyclomaticComplexity") //complaining about equals and hashCode

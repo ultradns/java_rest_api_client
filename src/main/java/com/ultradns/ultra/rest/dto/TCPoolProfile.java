@@ -17,7 +17,6 @@ import java.util.List;
 /**
  * Traffic Controller Pool Profile.
  *
- * @author kushalraj.bhandari
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TCPoolProfile implements Profile {

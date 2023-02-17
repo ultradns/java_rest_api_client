@@ -1,8 +1,4 @@
 /*
- * User: nupadhyay
- * Date: Dec 15, 2014
- * Time: 12:55:13 PM
- *
  * Copyright 2023 Vercara LLC. All rights reserved.
  * Vercara, the Vercara logo and related names and logos are registered
  * trademarks, service marks or tradenames of Vercara LLC. All other

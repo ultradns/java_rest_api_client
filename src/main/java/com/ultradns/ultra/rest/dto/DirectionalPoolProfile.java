@@ -12,7 +12,6 @@ import java.util.List;
 /**
  * Directional Pool Profile Dto.
  *
- * @author ankitm.agarwal
  */
 public class DirectionalPoolProfile implements Profile {
 
@@ -207,7 +206,6 @@ public class DirectionalPoolProfile implements Profile {
     /**
      * ConflictResolve type.
      *
-     * @author ankitm.agarwal
      */
     public enum ConflictResolve {
         GEO,

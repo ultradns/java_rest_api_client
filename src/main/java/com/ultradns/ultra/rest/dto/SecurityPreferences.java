@@ -10,7 +10,6 @@ import java.util.List;
 /**
  * SecurityPreferences DTO.
  *
- * @author yash.khatri
  */
 @JsonInclude(Include.NON_NULL)
 public class SecurityPreferences {

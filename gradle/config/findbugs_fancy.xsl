@@ -111,7 +111,7 @@
       <script type='text/javascript'><xsl:text disable-output-escaping='yes'>
      /* <![CDATA[ */
          // Extended Tooltip Javascript
-         // Copyright 2023th August 2002, 3rd July 2005
+         // copyright 9th August 2002, 3rd July 2005
          // by Stephen Chapman, Felgall Pty Ltd
 
          // permission is granted to use this javascript provided that the below code is not altered

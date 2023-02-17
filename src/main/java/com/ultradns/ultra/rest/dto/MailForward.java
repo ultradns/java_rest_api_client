@@ -16,7 +16,6 @@ import java.util.List;
 /**
  * MailForward DTO.
  *
- * @author kushalraj.bhandari
  */
 @JsonInclude(Include.NON_NULL)
 public class MailForward {
@@ -127,7 +126,6 @@ public class MailForward {
     /**
      * An email address that is being forwarded to.
      *
-     * @author kushalraj.bhandari
      */
     public static class MailForwardTo {
 

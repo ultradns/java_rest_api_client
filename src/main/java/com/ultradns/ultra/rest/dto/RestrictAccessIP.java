@@ -6,8 +6,6 @@ import com.google.common.base.Objects;
 
 /**
  * The Class RestrictAccessIP.
- *
- * @author yash.khatri The Class RestrictAccessIP
  */
 @JsonInclude(Include.NON_NULL)
 public class RestrictAccessIP {

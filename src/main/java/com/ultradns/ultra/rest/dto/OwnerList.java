@@ -16,7 +16,6 @@ import java.util.List;
 /**
  * Owner List.
  *
- * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class OwnerList {

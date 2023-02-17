@@ -3,10 +3,6 @@ package com.ultradns.ultra.rest.main;
 import javax.ws.rs.core.MultivaluedMap;
 
 /*
- * User: jbodner
- * Date: 7/9/13
- * Time: 1:23 PM
- *
  * Copyright 2023 Vercara LLC. All rights reserved.
  * Vercara, the Vercara logo and related names and logos are registered
  * trademarks, service marks or tradenames of Vercara LLC. All other

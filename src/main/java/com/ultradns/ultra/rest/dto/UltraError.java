@@ -16,7 +16,6 @@ import java.util.TreeMap;
 /**
  * Ultra error.
  *
- * @author nupadhyay
  */
 
 public class UltraError {

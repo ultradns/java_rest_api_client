@@ -13,12 +13,6 @@ import com.google.common.collect.Sets;
 
 import java.util.Set;
 
-/*
- * @author vpavlyuk
- * @date 9/6/16
- * @time 4:49 PM
- *
- */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class IpOverlap {
 

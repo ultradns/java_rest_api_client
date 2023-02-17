@@ -14,7 +14,6 @@ import java.util.List;
 /**
  * Zone List.
  *
- * @author nupadhyay
  */
 
 @JsonInclude(Include.NON_NULL)

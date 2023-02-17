@@ -13,7 +13,6 @@ import com.google.common.base.Objects;
 /**
  * Primary name servers.
  *
- * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class PrimaryNameServers {

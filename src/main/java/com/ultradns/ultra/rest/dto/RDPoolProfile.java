@@ -12,7 +12,6 @@ import com.google.common.base.Objects;
 /**
  * RDPoolProfile.java.
  *
- * @author kushalraj.bhandari
  */
 public class RDPoolProfile implements Profile {
 

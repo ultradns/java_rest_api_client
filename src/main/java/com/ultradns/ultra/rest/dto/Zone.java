@@ -14,7 +14,6 @@ import com.google.common.base.Objects;
 /**
  * Zone Dto.
  *
- * @author nupadhyay
  */
 @JsonInclude(Include.NON_NULL)
 public class Zone {

@@ -7,8 +7,6 @@ package com.ultradns.ultra.rest.constants;
 
 /**
  * ListProbeType.
- *
- * @author kushalraj.bhandari
  */
 public enum ListProbeType {
 

@@ -17,7 +17,6 @@ import java.net.URI;
 /**
  * Task Status Info.
  *
- * @author kushalraj.bhandari
  */
 @JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -17,7 +17,6 @@ import java.util.Map;
 /**
  * Owner.
  *
- * @author nupadhyay
  */
 public class Owner {
 

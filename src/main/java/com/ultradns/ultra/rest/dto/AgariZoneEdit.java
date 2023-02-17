@@ -13,7 +13,6 @@ import com.google.common.base.Objects;
 /**
  * Agari Zone Edit Dto.
  *
- * @author vpavlyuk
  */
 @JsonInclude(Include.NON_NULL)
 public class AgariZoneEdit {

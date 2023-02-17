@@ -12,7 +12,6 @@ import java.util.List;
 /**
  * Task Status List.
  *
- * @author kushalraj.bhandari
  */
 @JsonInclude(Include.NON_NULL)
 public class TaskStatusList extends BaseQueryList {
