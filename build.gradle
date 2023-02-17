@@ -8,18 +8,8 @@ allprojects {
     version = '3.1.0'
 }
 
-// apply the common neustar gradle tasks to setup artifact repos, etc.
+// apply the common ultra gradle tasks to setup artifact repos, etc.
 apply from: file('gradle/ultra.gradle')
-
-// If this project has subprojects, you can customize them here
-//subprojects {
-//    dependencies {
-//      // common dependencies for multi-projects
-//    }
-//}
-
-// If you rename your packages, feel free to rename this..
-mainClassName = ext.serviceClassName
 
 // Add dependencies below..
 // For help with gradle, consult: http://www.gradle.org/docs/current/userguide/userguide_single.html
