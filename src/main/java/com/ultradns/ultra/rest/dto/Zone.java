@@ -27,8 +27,6 @@ public class Zone {
 
     private AliasZoneInfo aliasCreateInfo;
 
-    //the following fields are only here still because neuxfr is using these names
-    //once neuxfr is update, they will go away
     private ZoneProperties zoneProperties;
 
     private PrimaryZoneInfo primaryZoneInfo;

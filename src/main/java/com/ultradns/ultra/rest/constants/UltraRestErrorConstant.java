@@ -62,8 +62,7 @@ public enum UltraRestErrorConstant {
     AUTH_INVALID_MASQ_CREDS(60011, "Invalid Masquerade Credentials"),
     LOGIN_EXCEPTION(60012, "Login Exception"),
     BLACKLISTED_USER(60013,
-            "You are currently blacklisted, please contact UltraDNS customer support at +1 (844) NSR-CUST, "
-                    + "+1-844-677-2878, +1 571-434-6700 or www.support.neustar."),
+            "You are currently blacklisted, please contact UltraDNS customer support at +1 (844) 929-0808 or dns.ultraproducts.support."),
     AUTH_INVALID_SMS2FA_REQUEST_USERNAME_REQUIRED(60014,
             "invalid_request:username parameter is required for grant_type=SMS2FA"),
     AUTH_INVALID_SMS2FA_REQUEST_2FA_TOKEN_REQUIRED(60015,
@@ -365,7 +364,7 @@ public enum UltraRestErrorConstant {
     //ZBR error in case ZBR feature flag not enabled for all accounts related to user.
     NO_USER_ACCOUNTS_WITH_ZBR_FEATURE_FLAG_ON(370000,
             "Zone snapshot or restore feature is currently not enabled for your account. Please contact UltraDNS "
-                    + "customer support at +1 (844) NSR-CUST, +1-844-677-2878, +1 571-434-6700 or www.support.neustar"
+                    + "customer support at +1 (844) 929-0808 or dns.ultraproducts.support"
                     + "."),
 
     //ZBR zone restore does not allow pool
@@ -404,7 +403,7 @@ public enum UltraRestErrorConstant {
             +  " but cannot find mapping for ID's."),
 
     SAML_META_DATA_READ_ERROR(380018, "IDP Metadata read error. Should not happen, "
-            + "but if happens, please contact Neustar customer support."),
+            + "but if happens, please contact UltraDNS customer support."),
     SAML_META_DATA_PARSE_ERROR(380019, "Metadata format is invalid according to SAML spec."
             + " Correct the XML file and resubmit."),
     SAML_NAME_ID_FORMAT_CONFLICT(380020, "Name ID parameter selected during form submission "
@@ -472,8 +471,7 @@ public enum UltraRestErrorConstant {
     SUB_ACCOUNT_CANT_BE_LOCATED_ERROR(490005, "The sub-account '%s' cannot be located"),
     SUB_ACCOUNT_SUSPENDED_ERROR(490006, "The sub-account '%s' is suspended"),
     SUB_ACCOUNT_NOT_PROPERLY_SETUP_ERROR(490007,
-            "The account %s is not correctly configured in the system. Please contact UltraDNS customer support at +1"
-                    + " (844) NSR-CUST, +1-844-677-2878, +1 571-434-6700 or www.support.neustar."),
+            "The account %s is not correctly configured in the system. Please contact UltraDNS customer support at +1 (844) 929-0808 or dns.ultraproducts.support."),
     NO_SUB_ACCOUNTS_EXISTS(490004, "No sub accounts exists."),
     ACCOUNTS_NOT_ON_ULTRA_FLASH_PIPELINE(490009,
             "Operation is not supported for the provided source and target account combination."),

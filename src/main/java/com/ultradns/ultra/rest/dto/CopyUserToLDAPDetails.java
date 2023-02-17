@@ -16,7 +16,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 /**
- * This class represents the attributes of a user which needs to get copied over to Neustar LDAP for SAML SSO.
+ * This class represents the attributes of a user which needs to get copied over to Ultra LDAP for SAML SSO.
  */
 public class CopyUserToLDAPDetails {
 
