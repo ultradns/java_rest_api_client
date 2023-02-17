@@ -128,7 +128,7 @@ allprojects {
   // best guess ..
   project.ext.mainPackageName = projectNameNoService.toLowerCase()
   project.ext.mainServiceName = projectNameNoService.capitalize()
-  project.ext.serviceClassName = "biz.neustar." + ext.mainPackageName + '.' + ext.mainServiceName + "Service"
+  project.ext.serviceClassName = "com.ultradns." + ext.mainPackageName + '.' + ext.mainServiceName + "Service"
 
   // If you want to specify a version, do so before applying this otherwise 
   // one will be picked from either environment variable 'VERSION' or default to '0.0.0'
@@ -206,7 +206,7 @@ allprojects {
     }
   }
 
-  group = 'biz.neustar'
+  group = 'com.ultradns'
   def vendor = 'Neustar, Inc.'
 
   jar.doFirst {

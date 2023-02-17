@@ -17,7 +17,7 @@ Replace USERNAME and PASSWORD with your own username and password.
 Functionality
 =============
 
-The sample code does not attempt to implement a client for all available UltraDNS REST API functionality.  It provides access to basic functionality.  Adding additional functionality should be relatively straightforward, and any contributions from the UltraDNS community would be greatly appreciated.  See the unit test at biz.neustar.ultra.rest.client.RestApiClientTest for an example of how to use this library in your own code.
+The sample code does not attempt to implement a client for all available UltraDNS REST API functionality.  It provides access to basic functionality.  Adding additional functionality should be relatively straightforward, and any contributions from the UltraDNS community would be greatly appreciated.  See the unit test at com.ultradns.ultra.rest.client.RestApiClientTest for an example of how to use this library in your own code.
 
 Questions
 =========
