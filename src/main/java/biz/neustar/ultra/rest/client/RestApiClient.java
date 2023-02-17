@@ -214,6 +214,8 @@ public class RestApiClient {
     /**
      * List zones for account.
      *
+     * Please use getZoneListByCursor instead
+     *
      * @param accountName - One of the user's accounts. The user must have read access for zone in that account
      * @param q           - The search parameters, in a hash. Valid keys are: name - substring match of the zone name
      *                    zone_type - one of : PRIMARY/SECONDARY/ALIAS
@@ -225,11 +227,18 @@ public class RestApiClient {
      * @return - {@link ZoneInfoList}
      * @throws IOException - {@link IOException}
      */
+    @Deprecated
     public ZoneInfoList getZonesOfAccount(String accountName, String q, int offset, int limit,
             UltraRestSharedConstant.ZoneListSortType sort, boolean reverse) throws IOException {
-        MultivaluedMap<String, String> queryParams = buildQueryParams(q, offset, limit, sort, reverse);
-        String url = ACCOUNTS1 + URLEncoder.encode(accountName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue())
-                .replaceAll("\\+", "%20") + "/zones";
+        String q2 = q;
+        if (!Strings.isNullOrEmpty(accountName)) {
+            String accountCond = "account_name:"
+                    + URLEncoder.encode(accountName, UltraRestSharedConstant.UTF_8_CHAR_SET.getValue())
+                    .replaceAll("\\+", "%20");
+            q2 = Strings.isNullOrEmpty(q2) ? accountCond : (q2 + " " + accountCond);
+        }
+        MultivaluedMap<String, String> queryParams = buildQueryParams(q2, offset, limit, sort, reverse);
+        String url = "/zones";
         ClientData clientData = ultraRestClient.get(url, queryParams);
         checkClientData(clientData);
         return JsonUtils.jsonToObject(clientData.getBody(), ZoneInfoList.class);
@@ -857,7 +866,7 @@ public class RestApiClient {
      *
      * @param q           - The search parameters, in a hash. Valid keys are:
      *                      o account_name – will only return results that match the provided sub account accountName.
-     *                        For account names that include spaces in them, replace the space with “%20”.
+     *                        For account names that include spaces in them, replace the space with "%20".
      *                      o match - Valid values for match include: o name o zone_type o zone_status
      *                            o dnssec_status o Account_name (only sub account names)
      * @param offset      - The position in the list for the first returned element(0 based)
@@ -882,7 +891,7 @@ public class RestApiClient {
      *
      * @param q           - The search parameters, in a hash. Valid keys are:
      *                      o account_name – will only return results that match the provided accountName. For account
-     *                       names that include spaces in them, replace the space with “%20”.
+     *                       names that include spaces in them, replace the space with "%20".
      *                      o match - Valid values for match include: o ANYWHERE o EXACT o START o END
      * @param offset      - The position in the list for the first returned element(0 based)
      * @param limit       - The maximum number of zones to be returned
