@@ -9,7 +9,7 @@ allprojects {
 }
 
 // apply the common neustar gradle tasks to setup artifact repos, etc.
-apply from: file('gradle/neustar.gradle')
+apply from: file('gradle/ultra.gradle')
 
 // If this project has subprojects, you can customize them here
 //subprojects {
