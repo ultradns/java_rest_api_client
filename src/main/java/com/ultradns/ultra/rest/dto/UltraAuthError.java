@@ -8,9 +8,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Date: 12/20/13
  * Time: 12:15 AM
  *
- * Copyright 2000-2012 NeuStar, Inc. All rights reserved.
- * NeuStar, the Neustar logo and related names and logos are registered
- * trademarks, service marks or tradenames of NeuStar, Inc. All other
+ * Copyright 2023 Vercara LLC. All rights reserved.
+ * Vercara, the Vercara logo and related names and logos are registered
+ * trademarks, service marks or tradenames of Vercara LLC. All other
  * product names, company names, marks, logos and symbols may be trademarks
  * of their respective owners.
  */

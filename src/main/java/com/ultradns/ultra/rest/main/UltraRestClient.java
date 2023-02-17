@@ -1,9 +1,9 @@
 package com.ultradns.ultra.rest.main;
 
 /*
- * Copyright 2012-2013 NeuStar, Inc. All rights reserved.
- * NeuStar, the Neustar logo and related names and logos are registered
- * trademarks, service marks or tradenames of NeuStar, Inc. All other
+ * Copyright 2023 Vercara LLC. All rights reserved.
+ * Vercara, the Vercara logo and related names and logos are registered
+ * trademarks, service marks or tradenames of Vercara LLC. All other
  * product names, company names, marks, logos and symbols may be trademarks
  * of their respective owners.
  */
@@ -43,8 +43,8 @@ import java.util.function.Supplier;
 /**
  * Ultra Rest Client.
  *
- * @author ankitm.agarwal Copyright 2000-2012 NeuStar, Inc. All rights reserved. NeuStar, the Neustar logo and related
- *         names and logos are registered trademarks, service marks or tradenames of NeuStar, Inc. All other product
+ * @author ankitm.agarwal Copyright 2023 Vercara LLC. All rights reserved. Vercara, the Vercara logo and related
+ *         names and logos are registered trademarks, service marks or tradenames of Vercara LLC. All other product
  *         names, company names, marks, logos and symbols may be trademarks of their respective owners.
  */
 @SuppressWarnings("PMD.GodClass")
