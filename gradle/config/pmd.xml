@@ -6,7 +6,7 @@
     xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd">
 
   <description>
-    Neustar ruleset for PMD
+    Ultra ruleset for PMD
   </description>
 
   <!-- We'll use the entire 'strings' ruleset -->
